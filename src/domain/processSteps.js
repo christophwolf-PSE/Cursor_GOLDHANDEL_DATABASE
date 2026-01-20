@@ -1,0 +1,20 @@
+export const PROCESS_STEPS = [
+    { step_no: 1, title: 'Kontaktanbahnung Seller/Intermediaries' },
+    { step_no: 2, title: 'Buyer-Placement' },
+    { step_no: 3, title: 'KYC/AML/Sanktions-/Embargoprüfung' },
+    { step_no: 4, title: 'Chain-of-Custody Dokumentation' },
+    { step_no: 5, title: 'SPA-Erstellung/Signatur' },
+    { step_no: 6, title: 'Re-Identifizierung (nur bei Hallmark >5 Jahre)' },
+    { step_no: 7, title: 'Vorab-Dokumente 72h vor Versand' },
+    { step_no: 8, title: 'Lufttransport (versichert, Zollversiegelung)' },
+    { step_no: 9, title: 'Zollbereich Frankfurt/Main: Vorprüfung' },
+    { step_no: 10, title: 'Sicherheitslogistik' },
+    { step_no: 11, title: 'Ankunft Pforzheim: Annahmebestätigung' },
+    { step_no: 12, title: 'Fire Assay + optional Second Assay' },
+    { step_no: 13, title: 'Verbindlicher Assay Report' },
+    { step_no: 14, title: 'Preisfestlegung (LBMA Fixing Bezug)' },
+    { step_no: 15, title: 'Zahlung innerhalb vertraglicher Frist' },
+    { step_no: 16, title: 'Ownership Transfer' },
+    { step_no: 17, title: 'Raffination zu 999,9' },
+    { step_no: 18, title: 'Lagerung/Abholung Buyer' }
+];

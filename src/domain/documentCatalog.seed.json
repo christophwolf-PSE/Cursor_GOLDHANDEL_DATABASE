@@ -1,0 +1,66 @@
+[
+  {"step_no":1,"sub_no":1,"doc_code":"NDA-NCNDA","title":"NDA / NCNDA (light)","template_no":null,"language":"EN","doc_type":"GENERATED","required":false},
+
+  {"step_no":2,"sub_no":1,"doc_code":"FEE-BUYER","title":"Buyer-Side Intermediary Fee Agreement","template_no":"09","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":2,"sub_no":2,"doc_code":"FEE-SELLER","title":"Seller-Side Intermediary Fee Agreement","template_no":"10","language":"EN","doc_type":"GENERATED","required":false},
+  {"step_no":2,"sub_no":3,"doc_code":"FEE-CHAIN","title":"Full Chain Master Fee & NCNDA Agreement","template_no":"11","language":"EN","doc_type":"GENERATED","required":false},
+  {"step_no":2,"sub_no":4,"doc_code":"DPT","title":"Discount Participation Table (Annex)","template_no":null,"language":"EN","doc_type":"GENERATED","required":true},
+
+  {"step_no":3,"sub_no":1,"doc_code":"KYC-CIS","title":"KYC / CIS Form","template_no":"01.1","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":3,"sub_no":2,"doc_code":"SCREEN-LOG","title":"Sanctions/PEP/Embargo Screening Log","template_no":"12","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":3,"sub_no":3,"doc_code":"SOF-SOW","title":"Source of Funds / Source of Wealth Declaration","template_no":"13","language":"EN","doc_type":"GENERATED","required":false},
+  {"step_no":3,"sub_no":4,"doc_code":"ID-UPLOAD","title":"ID/Passport/Company Docs (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+
+  {"step_no":4,"sub_no":1,"doc_code":"COC-TRANSFER","title":"Chain-of-Custody Transfer Record","template_no":"14","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":4,"sub_no":2,"doc_code":"ORIGIN-PROOFS","title":"Origin / Ownership Proofs (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+
+  {"step_no":5,"sub_no":1,"doc_code":"SPA","title":"Sales and Purchase Agreement","template_no":"06.1","language":"EN","doc_type":"GENERATED","required":true,"locked_text":true},
+  {"step_no":5,"sub_no":2,"doc_code":"SPA-ADD-02","title":"SPA Addendum-02","template_no":"08","language":"EN","doc_type":"GENERATED","required":false,"locked_text":true},
+  {"step_no":5,"sub_no":3,"doc_code":"BCL","title":"Bank Comfort Letter","template_no":"02","language":"EN","doc_type":"GENERATED","required":false},
+  {"step_no":5,"sub_no":4,"doc_code":"PAY-GUAR","title":"Payment Guarantee Letter","template_no":"03","language":"EN","doc_type":"GENERATED","required":false},
+
+  {"step_no":6,"sub_no":1,"doc_code":"72H-COVER","title":"72h Shipping Documents Cover Sheet","template_no":"16","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":6,"sub_no":2,"doc_code":"PROFORMA","title":"Proforma Invoice (Upload/Template)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":3,"doc_code":"COO","title":"Certificate of Origin (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":4,"doc_code":"OWNERSHIP","title":"Ownership Declaration (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":5,"doc_code":"PACKING","title":"Packing List (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":6,"doc_code":"ASSAY-PRE","title":"Assay Report (Pre) (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":7,"doc_code":"AWB","title":"Air Waybill (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":8,"doc_code":"EXPORT-PERMIT","title":"Export Permit (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":9,"doc_code":"CUSTOMS-DECL","title":"Customs Declaration (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":10,"doc_code":"TAX-REC","title":"Tax Receipt (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":11,"doc_code":"INSURANCE","title":"Insurance Certificate (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+  {"step_no":6,"sub_no":12,"doc_code":"FREE-CLEAR","title":"Free & Clear Declaration (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+
+  {"step_no":7,"sub_no":1,"doc_code":"LOG-INS","title":"Logistics & Insurance Instructions","template_no":"17","language":"EN","doc_type":"GENERATED","required":true},
+
+  {"step_no":8,"sub_no":1,"doc_code":"IMPORT-INSTR","title":"Customs/Import Instruction Sheet","template_no":"18","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":8,"sub_no":2,"doc_code":"CUSTOMS-NOTES","title":"Customs/Handling Notes (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":false},
+
+  {"step_no":9,"sub_no":1,"doc_code":"SEC-HANDOVER","title":"Security Logistics Handover Record","template_no":null,"language":"EN","doc_type":"GENERATED","required":false},
+
+  {"step_no":10,"sub_no":1,"doc_code":"RECEIVE-CERT","title":"Acceptance & Receiving Certificate","template_no":"15","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":10,"sub_no":2,"doc_code":"PHOTOS-SEALS","title":"Photos/Seal Numbers (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":false},
+
+  {"step_no":11,"sub_no":1,"doc_code":"ASSAY-REQ","title":"Assay Request Form","template_no":"19","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":11,"sub_no":2,"doc_code":"ASSAY-2ND","title":"Second Assay Request/Report (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":false},
+
+  {"step_no":12,"sub_no":1,"doc_code":"ASSAY-FINAL-COVER","title":"Final Assay Report Cover + Summary","template_no":"20","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":12,"sub_no":2,"doc_code":"ASSAY-FINAL","title":"Final Assay Report (Signed Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
+
+  {"step_no":13,"sub_no":1,"doc_code":"PRICE-FIX","title":"Price Fixing Sheet (LBMA reference)","template_no":"21","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":13,"sub_no":2,"doc_code":"FX-OVERRIDE","title":"Deal FX Override Evidence (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":false},
+
+  {"step_no":14,"sub_no":1,"doc_code":"SETTLEMENT","title":"Payment Instruction / Settlement Sheet","template_no":"22","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":14,"sub_no":2,"doc_code":"PAY-CONF","title":"Payment Confirmation (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":false},
+
+  {"step_no":15,"sub_no":1,"doc_code":"OWN-TRANSFER","title":"Ownership Transfer Certificate","template_no":"23","language":"EN","doc_type":"GENERATED","required":true},
+
+  {"step_no":16,"sub_no":1,"doc_code":"REFINE-ORDER","title":"Refining Order / Processing Instruction","template_no":"24","language":"EN","doc_type":"GENERATED","required":false},
+  {"step_no":16,"sub_no":2,"doc_code":"REFINE-CERT","title":"Refinery Certificate (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":false},
+
+  {"step_no":17,"sub_no":1,"doc_code":"STORAGE-RELEASE","title":"Storage & Buyer Release / Collection Note","template_no":"25","language":"EN","doc_type":"GENERATED","required":false},
+
+  {"step_no":18,"sub_no":1,"doc_code":"CLOSING-INDEX","title":"Closing Dossier Index","template_no":"26","language":"EN","doc_type":"GENERATED","required":true},
+  {"step_no":18,"sub_no":2,"doc_code":"AUDIT-EXPORT","title":"Audit Log Export (auto)","template_no":null,"language":"EN","doc_type":"EXTERNAL","required":true}
+]

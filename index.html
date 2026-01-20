@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goldankauf Prozess-Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Tabler Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- docx.js for Word export -->
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-logo">
+                    <img id="login-logo" src="assets/Logo%20SCE%20black.png" alt="SilberChrom Entertainment GmbH">
+                </div>
+                <h1><i class="ti ti-gold"></i> Goldankauf Prozess-Management</h1>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">E-Mail</label>
+                        <input type="email" id="email" required placeholder="ihre.email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Passwort</label>
+                        <input type="password" id="password" required placeholder="Ihr Passwort">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="ti ti-login"></i> Anmelden
+                    </button>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <button type="button" id="show-signup" class="btn btn-secondary" style="width: 100%;">
+                            <i class="ti ti-user-plus"></i> Neuen Account erstellen
+                        </button>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <button type="button" id="demo-mode-btn" class="btn" onclick="enableDemoMode(event)" style="width: 100%; background: var(--info); color: white;">
+                            <i class="ti ti-eye"></i> Demo-Modus (ohne Anmeldung)
+                        </button>
+                        <small style="display: block; margin-top: 0.5rem; color: var(--text-secondary);">
+                            Erkunden Sie die App ohne Anmeldung. Keine Daten werden gespeichert.
+                        </small>
+                    </div>
+                    <div id="login-error" class="error-message"></div>
+                </form>
+                
+                <!-- Sign Up Form (initially hidden) -->
+                <form id="signup-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="signup-email">E-Mail</label>
+                        <input type="email" id="signup-email" required placeholder="ihre.email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Passwort</label>
+                        <input type="password" id="signup-password" required placeholder="Mindestens 6 Zeichen" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password-confirm">Passwort bestätigen</label>
+                        <input type="password" id="signup-password-confirm" required placeholder="Passwort wiederholen" minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="ti ti-user-plus"></i> Account erstellen
+                    </button>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <button type="button" id="show-login" class="btn btn-secondary" style="width: 100%;">
+                            <i class="ti ti-arrow-left"></i> Zurück zur Anmeldung
+                        </button>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <button type="button" id="demo-mode-btn-signup" class="btn" onclick="enableDemoMode(event)" style="width: 100%; background: var(--info); color: white;">
+                            <i class="ti ti-eye"></i> Demo-Modus (ohne Anmeldung)
+                        </button>
+                        <small style="display: block; margin-top: 0.5rem; color: var(--text-secondary);">
+                            Erkunden Sie die App ohne Anmeldung. Keine Daten werden gespeichert.
+                        </small>
+                    </div>
+                    <div id="signup-error" class="error-message"></div>
+                    <div id="signup-success" class="success-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-screen" class="screen">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-brand">
+                    <h1><i class="ti ti-gold"></i> Goldankauf Prozess-Management</h1>
+                    <img id="brand-logo" class="brand-logo" src="assets/Logo%20SCE%20black.png" alt="SilberChrom Entertainment GmbH">
+                </div>
+                <div class="header-actions">
+                    <button id="chatbot-toggle" class="btn-icon" title="Chatbot">
+                        <i class="ti ti-message-circle"></i>
+                    </button>
+                    <button id="dark-mode-toggle" class="btn-icon" title="Dark Mode">
+                        <i class="ti ti-moon"></i>
+                    </button>
+                    <div class="user-menu">
+                        <span id="user-email"></span>
+                        <button id="logout-btn" class="btn btn-secondary">Abmelden</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view active">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Geschäfte Übersicht</h2>
+                    <div class="lbma-price" id="lbma-price">
+                        <div class="lbma-header">
+                            <span class="lbma-label">LBMA Gold</span>
+                            <div class="lbma-units">
+                                <label><input type="checkbox" class="lbma-unit" data-unit="oz" checked> oz</label>
+                                <label><input type="checkbox" class="lbma-unit" data-unit="kg"> kg</label>
+                            </div>
+                        </div>
+                        <span class="lbma-values">—</span>
+                        <span class="lbma-time"></span>
+                    </div>
+                    <div class="generator-tile">
+                        <div class="generator-tile-label">Generator &amp; Exports</div>
+                        <button id="generator-hub-btn" class="btn btn-secondary btn-sm">
+                            <i class="ti ti-files"></i> Dokumente
+                        </button>
+                    </div>
+                    <div class="header-actions dashboard-actions">
+                        <button id="export-overview-btn" class="btn btn-secondary">
+                            <i class="ti ti-file-report"></i> Deal-Übersicht
+                        </button>
+                        <button id="grc-planning-btn" class="btn btn-secondary">
+                            <i class="ti ti-calendar-stats"></i> GRC 5000 Planung
+                        </button>
+                        <button id="contacts-btn" class="btn btn-secondary">
+                            <i class="ti ti-address-book"></i> Adressverwaltung
+                        </button>
+                        <button id="new-deal-btn" class="btn btn-primary">
+                            <i class="ti ti-plus"></i> Neues Geschäft
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters">
+                    <input type="text" id="search-deals" placeholder="Suchen (Geschäftsnummer, Land, Status, Ware...)" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore="true">
+                    <select id="filter-status">
+                        <option value="">Alle Status</option>
+                        <option value="Draft">Draft</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="On Hold">On Hold</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Aborted (IMP)">Aborted (IMP)</option>
+                        <option value="Aborted (Seller)">Aborted (Seller)</option>
+                        <option value="Aborted (Buyer)">Aborted (Buyer)</option>
+                        <option value="Cancelled (IMP)">Cancelled (IMP)</option>
+                        <option value="Cancelled (Seller)">Cancelled (Seller)</option>
+                        <option value="Cancelled (Buyer)">Cancelled (Buyer)</option>
+                    </select>
+                </div>
+
+                <!-- Deals List -->
+                <div id="deals-list" class="deals-grid"></div>
+            </div>
+        </div>
+
+        <!-- Deal Detail View -->
+        <div id="deal-detail-view" class="view">
+            <div class="container">
+                <div class="page-header">
+                    <button id="back-to-dashboard" class="btn btn-secondary">
+                        <i class="ti ti-arrow-left"></i> Zurück
+                    </button>
+                    <h2 id="deal-title"></h2>
+                    <div class="header-actions">
+                        <button id="export-deal-btn" class="btn btn-primary">
+                            <i class="ti ti-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Deal Info Card -->
+                <div class="card deal-info-card">
+                    <div class="card-header">
+                        <h3>Geschäftsinformationen</h3>
+                        <div class="card-header-actions">
+                            <button id="discount-participation-btn" class="btn btn-sm btn-primary">Discount Participation Table</button>
+                            <button id="edit-deal-btn" class="btn btn-sm btn-secondary">Bearbeiten</button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="deal-info-content"></div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="process">
+                        <i class="ti ti-list-numbers"></i> Prozess
+                    </button>
+                    <button class="tab-btn tab-btn-documents" data-tab="documents" style="position: relative;">
+                        <i class="ti ti-files"></i> Dokumente
+                        <span class="tab-notification-badge">!</span>
+                    </button>
+                    <button class="tab-btn" data-tab="contacts">
+                        <i class="ti ti-address-book"></i> Kontakte
+                    </button>
+                    <button class="tab-btn" data-tab="risks">
+                        <i class="ti ti-alert-triangle"></i> Risiken
+                    </button>
+                    <button class="tab-btn" data-tab="audit">
+                        <i class="ti ti-history"></i> Audit
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Process Tab -->
+                    <div id="tab-process" class="tab-pane active">
+                        <div class="process-container">
+                            <div class="process-stepper" id="process-stepper"></div>
+                            <div class="step-detail-panel" id="step-detail-panel">
+                                <div class="empty-state">
+                                    <i class="ti ti-info-circle"></i>
+                                    <p>Wählen Sie einen Schritt aus, um Details anzuzeigen</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Tab -->
+                    <div id="tab-documents" class="tab-pane">
+                        <div class="documents-header">
+                            <input type="text" id="search-documents" placeholder="Dokumente durchsuchen...">
+                            <button id="upload-document-btn" class="btn btn-primary">
+                                <i class="ti ti-upload"></i> Dokument hochladen
+                            </button>
+                        </div>
+                        <div id="documents-list" class="documents-grid"></div>
+                    </div>
+
+                    <!-- Contacts Tab -->
+                    <div id="tab-contacts" class="tab-pane">
+                        <div class="contacts-header">
+                            <button id="add-deal-contact-btn" class="btn btn-primary">
+                                <i class="ti ti-plus"></i> Kontakt zuweisen
+                            </button>
+                        </div>
+                        <div id="deal-contacts-list" class="contacts-grid"></div>
+                        <div class="contacts-header">
+                            <h4>Bankinformationen</h4>
+                        </div>
+                        <div id="deal-bank-list" class="contacts-grid"></div>
+                    </div>
+
+                    <!-- Risks Tab -->
+                    <div id="tab-risks" class="tab-pane">
+                        <div class="risks-header">
+                            <button id="add-risk-btn" class="btn btn-primary">
+                                <i class="ti ti-plus"></i> Risiko hinzufügen
+                            </button>
+                            <select id="filter-risk-category">
+                                <option value="">Alle Kategorien</option>
+                                <option value="AML">AML</option>
+                                <option value="KYC">KYC</option>
+                                <option value="Zoll">Zoll</option>
+                                <option value="Logistik">Logistik</option>
+                                <option value="Qualität">Qualität</option>
+                                <option value="Zahlung">Zahlung</option>
+                                <option value="Compliance">Compliance</option>
+                            </select>
+                        </div>
+                        <div id="risks-list" class="risks-grid"></div>
+                    </div>
+
+                    <!-- Audit Tab -->
+                    <div id="tab-audit" class="tab-pane">
+                        <div id="audit-timeline" class="audit-timeline"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- New Deal Modal -->
+    <div id="new-deal-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Neues Geschäft erstellen</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="new-deal-form">
+                <div class="form-group">
+                    <label for="new-deal-country">Land *</label>
+                    <input type="text" id="new-deal-country" list="country-suggestions" autocomplete="off" data-form-type="other" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-deal-route">Route</label>
+                    <input type="text" id="new-deal-route" list="route-suggestions" autocomplete="off" data-form-type="other">
+                    <div id="new-route-suggestions" class="suggestions-list"></div>
+                </div>
+                <div class="form-group">
+                    <label for="new-deal-commodity">Ware *</label>
+                    <select id="new-deal-commodity" required>
+                        <option value="">Bitte wählen</option>
+                        <option value="Doré">Doré Gold Bars</option>
+                        <option value="Hallmark">Gestempeltes Tafelgold/Hallmark</option>
+                        <option value="Gold Dust / Nuggets / Lumps">Gold Dust / Nuggets / Lumps</option>
+                        <option value="Scrap / Melt">Srap / Melt</option>
+                        <option value="Granulat / Grain">Granulat / Grain</option>
+                        <option value="Münzen / Medaillen">Münzen / Medaillen</option>
+                        <option value="Cast Bars">Cast Bars (gegossene Barren)</option>
+                        <option value="Minted Bars">Minted Bars (geprägte Barren)</option>
+                    </select>
+                    <div class="form-hint" id="new-deal-commodity-hint" style="display:none;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="new-deal-offer">Angebot (Offer)</label>
+                    <input type="text" id="new-deal-offer" list="offer-suggestions" autocomplete="off" data-form-type="other" placeholder="50 kg/mo (M1-3) -> 100 kg/mo (M4-36), term 36 mo">
+                    <div id="new-offer-suggestions" class="suggestions-list"></div>
+                </div>
+                <div class="form-group">
+                    <label for="new-deal-discount">LBMA disc. %</label>
+                    <input type="number" id="new-deal-discount" min="0" max="99" step="1" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="new-deal-seller">Seller</label>
+                    <div class="field-inline">
+                        <input type="text" id="new-deal-seller" placeholder="Nicht zugeordnet" readonly>
+                        <button type="button" id="new-deal-seller-pick" class="btn btn-secondary btn-sm">Aus Adressverwaltung wählen</button>
+                    </div>
+                </div>
+                <div class="form-group" id="hallmark-age-group" style="display: none;">
+                    <label for="new-deal-hallmark-age">Stempelalter</label>
+                    <select id="new-deal-hallmark-age">
+                        <option value="<=5 Jahre"><=5 Jahre</option>
+                        <option value=">5 Jahre">>5 Jahre</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Deal Modal -->
+    <div id="edit-deal-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Geschäft bearbeiten</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="edit-deal-form">
+                <div class="form-group">
+                    <label for="edit-deal-status">Status *</label>
+                    <select id="edit-deal-status" required>
+                        <option value="Draft">Draft</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="On Hold">On Hold</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Aborted (IMP)">Aborted (IMP)</option>
+                        <option value="Aborted (Seller)">Aborted (Seller)</option>
+                        <option value="Aborted (Buyer)">Aborted (Buyer)</option>
+                        <option value="Cancelled (IMP)">Cancelled (IMP)</option>
+                        <option value="Cancelled (Seller)">Cancelled (Seller)</option>
+                        <option value="Cancelled (Buyer)">Cancelled (Buyer)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-deal-country">Land *</label>
+                    <input type="text" id="edit-deal-country" list="country-suggestions" autocomplete="off" data-form-type="other" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-deal-route">Route</label>
+                    <input type="text" id="edit-deal-route" list="route-suggestions" autocomplete="off" data-form-type="other">
+                    <div id="edit-route-suggestions" class="suggestions-list"></div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-deal-commodity">Ware *</label>
+                    <select id="edit-deal-commodity" required>
+                        <option value="">Bitte wählen</option>
+                        <option value="Doré">Doré Gold Bars</option>
+                        <option value="Hallmark">Gestempeltes Tafelgold/Hallmark</option>
+                        <option value="Gold Dust / Nuggets / Lumps">Gold Dust / Nuggets / Lumps</option>
+                        <option value="Scrap / Melt">Srap / Melt</option>
+                        <option value="Granulat / Grain">Granulat / Grain</option>
+                        <option value="Münzen / Medaillen">Münzen / Medaillen</option>
+                        <option value="Cast Bars">Cast Bars (gegossene Barren)</option>
+                        <option value="Minted Bars">Minted Bars (geprägte Barren)</option>
+                    </select>
+                    <div class="form-hint" id="edit-deal-commodity-hint" style="display:none;"></div>
+                </div>
+                <div class="form-group" id="edit-hallmark-age-group" style="display: none;">
+                    <label for="edit-deal-hallmark-age">Stempelalter</label>
+                    <select id="edit-deal-hallmark-age">
+                        <option value="<=5 Jahre"><=5 Jahre</option>
+                        <option value=">5 Jahre">>5 Jahre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-deal-offer">Angebot (Offer)</label>
+                    <input type="text" id="edit-deal-offer" list="offer-suggestions" autocomplete="off" data-form-type="other" placeholder="50 kg/mo (M1-3) -> 100 kg/mo (M4-36), term 36 mo">
+                    <div id="edit-offer-suggestions" class="suggestions-list"></div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-deal-discount">LBMA disc. %</label>
+                    <input type="number" id="edit-deal-discount" min="0" max="99" step="1">
+                </div>
+                <div class="form-group">
+                    <label for="edit-deal-seller">Seller</label>
+                    <div class="field-inline">
+                        <input type="text" id="edit-deal-seller" placeholder="Nicht zugeordnet" readonly>
+                        <button type="button" id="edit-deal-seller-pick" class="btn btn-secondary btn-sm">Aus Adressverwaltung wählen</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                    <button type="button" id="edit-deal-grc-btn" class="btn btn-secondary">GRC 5000 Planung</button>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <datalist id="route-suggestions"></datalist>
+    <datalist id="offer-suggestions"></datalist>
+    <datalist id="country-suggestions"></datalist>
+    <datalist id="contact-role-suggestions"></datalist>
+    <datalist id="contact-company-suggestions"></datalist>
+    <datalist id="contact-notes-suggestions"></datalist>
+    <datalist id="contact-deal-notes-suggestions"></datalist>
+
+    <!-- Step Detail Modal -->
+    <div id="step-detail-modal" class="modal modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="step-modal-title"></h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="step-modal-content" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Contacts Modal -->
+    <div id="contacts-modal" class="modal modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Adressverwaltung</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body contacts-modal-body">
+                <div class="contacts-sidebar">
+                    <div class="contacts-toolbar">
+                        <input type="text" id="contacts-search" placeholder="Kontakte suchen...">
+                        <button id="new-contact-btn" class="btn btn-primary btn-sm">
+                            <i class="ti ti-plus"></i> Neuer Kontakt
+                        </button>
+                    </div>
+                    <div id="contacts-list" class="contacts-list"></div>
+                </div>
+                <div class="contacts-detail">
+                    <div id="contact-detail-empty" class="empty-state">
+                        <i class="ti ti-user"></i>
+                        <p>Kontakt auswählen oder neu erstellen</p>
+                    </div>
+                    <div id="contact-detail" class="contact-detail-panel" style="display: none;">
+                        <div class="contact-detail-header">
+                            <div>
+                                <h4 id="contact-name-title">Neuer Kontakt</h4>
+                                <span id="contact-role-title" class="text-secondary">-</span>
+                            </div>
+                            <div class="contact-detail-actions">
+                                <button id="assign-seller-btn" class="btn btn-secondary btn-sm hidden">Als Seller zuordnen</button>
+                                <button id="save-contact-btn" class="btn btn-primary btn-sm">
+                                    <i class="ti ti-device-floppy"></i> Speichern
+                                </button>
+                            </div>
+                        </div>
+                        <div class="contact-detail-grid">
+                            <div class="form-group">
+                                <label for="contact-name">Name *</label>
+                                <input type="text" id="contact-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-role">Rolle/Funktion</label>
+                                <input type="text" id="contact-role" list="contact-role-suggestions" placeholder="Seller, Buyer, Intermediary, Bank...">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-company">Firma/Organisation</label>
+                                <input type="text" id="contact-company" list="contact-company-suggestions">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-email">E-Mail</label>
+                                <input type="email" id="contact-email">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-phone">Telefon</label>
+                                <input type="text" id="contact-phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-mobile">Mobil</label>
+                                <input type="text" id="contact-mobile">
+                            </div>
+                            <div class="form-group contact-notes">
+                                <label for="contact-notes">Notizen</label>
+                                <textarea id="contact-notes" rows="3" list="contact-notes-suggestions"></textarea>
+                            </div>
+                        </div>
+                        <div class="contact-section">
+                            <div class="section-header">
+                                <h5>Einsatz in Geschäften</h5>
+                            </div>
+                            <div class="contact-inline-form">
+                                <select id="contact-deal-select"></select>
+                                <select id="contact-deal-role">
+                                    <option value="Seller">Seller</option>
+                                    <option value="Buyer">Buyer</option>
+                                    <option value="Intermediary">Intermediary</option>
+                                    <option value="IMP">IMP</option>
+                                    <option value="Bank">Bank</option>
+                                    <option value="Logistics">Logistics</option>
+                                    <option value="Assay">Assay</option>
+                                    <option value="Customs">Customs</option>
+                                </select>
+                                <input type="text" id="contact-deal-notes" placeholder="Notiz" list="contact-deal-notes-suggestions">
+                                <button id="add-contact-deal-btn" class="btn btn-secondary btn-sm">Hinzufügen</button>
+                            </div>
+                            <div id="contact-deals-list" class="contact-links-list"></div>
+                        </div>
+                        <div class="contact-section">
+                            <div class="section-header">
+                                <h5>Bankinformationen pro Geschäft</h5>
+                            </div>
+                            <div class="contact-inline-form">
+                                <select id="bank-deal-select"></select>
+                                <input type="text" id="bank-name" placeholder="Bankname">
+                                <input type="text" id="bank-iban" placeholder="IBAN">
+                                <input type="text" id="bank-bic" placeholder="BIC/SWIFT" autocomplete="off" inputmode="latin" autocapitalize="characters" pattern="[A-Z0-9]*">
+                                <input type="text" id="bank-account-holder" placeholder="Kontoinhaber">
+                                <button id="add-bank-info-btn" class="btn btn-secondary btn-sm">Hinzufügen</button>
+                            </div>
+                            <div id="bank-info-list" class="contact-links-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Risk Modal -->
+    <div id="add-risk-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="risk-modal-title">Risiko hinzufügen</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="add-risk-form">
+                <input type="hidden" id="risk-id" value="">
+                <div class="form-group">
+                    <label for="risk-category">Kategorie *</label>
+                    <select id="risk-category" required>
+                        <option value="AML">AML</option>
+                        <option value="KYC">KYC</option>
+                        <option value="Zoll">Zoll</option>
+                        <option value="Logistik">Logistik</option>
+                        <option value="Qualität">Qualität</option>
+                        <option value="Zahlung">Zahlung</option>
+                        <option value="Compliance">Compliance</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="risk-description">Beschreibung *</label>
+                    <textarea id="risk-description" rows="3" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="risk-severity">Schweregrad (1-5) *</label>
+                        <input type="number" id="risk-severity" min="1" max="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="risk-probability">Wahrscheinlichkeit (1-5) *</label>
+                        <input type="number" id="risk-probability" min="1" max="5" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="risk-mitigation">Mitigation</label>
+                    <div class="mitigation-presets-wrapper">
+                        <button type="button" id="mitigation-presets-btn" class="btn btn-sm btn-secondary">
+                            <i class="ti ti-list"></i> Vordefinierte Maßnahmen auswählen
+                        </button>
+                        <div id="mitigation-presets-container" class="mitigation-presets-container">
+                            <div class="mitigation-presets-grid">
+                                <label class="mitigation-preset-label" data-category="AML/KYC">
+                                    <input type="checkbox" class="mitigation-preset" value="Erweiterte Due-Diligence-Prüfung des Verkäufers" data-category="AML/KYC">
+                                    <span>Erweiterte Due-Diligence-Prüfung des Verkäufers</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="AML/KYC">
+                                    <input type="checkbox" class="mitigation-preset" value="Verifizierung der Identität über zwei unabhängige Quellen" data-category="AML/KYC">
+                                    <span>Verifizierung der Identität über zwei unabhängige Quellen</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="AML/KYC">
+                                    <input type="checkbox" class="mitigation-preset" value="Prüfung gegen internationale Sanktionslisten" data-category="AML/KYC">
+                                    <span>Prüfung gegen internationale Sanktionslisten</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Zoll">
+                                    <input type="checkbox" class="mitigation-preset" value="Vorab-Koordination mit Zollbehörden in Frankfurt" data-category="Zoll">
+                                    <span>Vorab-Koordination mit Zollbehörden in Frankfurt</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Zoll">
+                                    <input type="checkbox" class="mitigation-preset" value="Einholung aller erforderlichen Export-/Import-Genehmigungen vor Versand" data-category="Zoll">
+                                    <span>Einholung aller erforderlichen Export-/Import-Genehmigungen vor Versand</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Zoll">
+                                    <input type="checkbox" class="mitigation-preset" value="Einschaltung eines erfahrenen Zollspediteurs" data-category="Zoll">
+                                    <span>Einschaltung eines erfahrenen Zollspediteurs</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Qualität">
+                                    <input type="checkbox" class="mitigation-preset" value="Fire Assay durch zertifiziertes Labor vor Zahlung" data-category="Qualität">
+                                    <span>Fire Assay durch zertifiziertes Labor vor Zahlung</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Qualität">
+                                    <input type="checkbox" class="mitigation-preset" value="Optional: Zweit-Assay bei unklaren Ergebnissen" data-category="Qualität">
+                                    <span>Optional: Zweit-Assay bei unklaren Ergebnissen</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Qualität">
+                                    <input type="checkbox" class="mitigation-preset" value="Visuelle Inspektion bei Ankunft in Pforzheim" data-category="Qualität">
+                                    <span>Visuelle Inspektion bei Ankunft in Pforzheim</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Logistik">
+                                    <input type="checkbox" class="mitigation-preset" value="Versicherung des Transports über 100% des Warenwerts" data-category="Logistik">
+                                    <span>Versicherung des Transports über 100% des Warenwerts</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Logistik">
+                                    <input type="checkbox" class="mitigation-preset" value="Verwendung von versiegelten Containern mit Zollverschluss" data-category="Logistik">
+                                    <span>Verwendung von versiegelten Containern mit Zollverschluss</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Logistik">
+                                    <input type="checkbox" class="mitigation-preset" value="GPS-Tracking während des gesamten Transports" data-category="Logistik">
+                                    <span>GPS-Tracking während des gesamten Transports</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Zahlung">
+                                    <input type="checkbox" class="mitigation-preset" value="Zahlung erst nach positivem Fire Assay und Ownership Transfer" data-category="Zahlung">
+                                    <span>Zahlung erst nach positivem Fire Assay und Ownership Transfer</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Zahlung">
+                                    <input type="checkbox" class="mitigation-preset" value="Verwendung eines Escrow-Service für kritische Transaktionen" data-category="Zahlung">
+                                    <span>Verwendung eines Escrow-Service für kritische Transaktionen</span>
+                                </label>
+                                <label class="mitigation-preset-label" data-category="Zahlung">
+                                    <input type="checkbox" class="mitigation-preset" value="Stufenweise Zahlung: 50% nach Assay, 50% nach Ownership Transfer" data-category="Zahlung">
+                                    <span>Stufenweise Zahlung: 50% nach Assay, 50% nach Ownership Transfer</span>
+                                </label>
+                            </div>
+                            <div class="mitigation-presets-actions">
+                                <button type="button" id="mitigation-add-selected" class="btn btn-sm btn-primary">
+                                    <i class="ti ti-plus"></i> Ausgewählte hinzufügen
+                                </button>
+                                <button type="button" id="mitigation-clear-presets" class="btn btn-sm btn-secondary">
+                                    <i class="ti ti-x"></i> Auswahl zurücksetzen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <textarea id="risk-mitigation" rows="3" placeholder="Wählen Sie vordefinierte Maßnahmen aus oder geben Sie hier Ihre eigenen Maßnahmen ein..."></textarea>
+                    <small class="form-hint">
+                        <i class="ti ti-info-circle"></i> Sie können vordefinierte Maßnahmen auswählen und zusätzlich eigenen Text eingeben.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="risk-owner">Owner</label>
+                    <input type="text" id="risk-owner">
+                </div>
+                <div class="form-group">
+                    <label for="risk-status">Status</label>
+                    <select id="risk-status">
+                        <option value="Open">Open</option>
+                        <option value="Mitigated">Mitigated</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary" id="risk-submit-btn">Hinzufügen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Document Modal -->
+    <div id="upload-document-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Dokument hochladen</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="upload-document-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="upload-document-step">Schritt (optional)</label>
+                        <select id="upload-document-step">
+                            <option value="">Kein spezifischer Schritt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="upload-document-type">Dokumenttyp *</label>
+                        <select id="upload-document-type" required>
+                            <option value="">Bitte wählen</option>
+                            <option value="PDF">PDF</option>
+                            <option value="JPG">JPG</option>
+                            <option value="PNG">PNG</option>
+                            <option value="DOCX">DOCX</option>
+                            <option value="XLSX">XLSX</option>
+                            <option value="INVOICE">Rechnung</option>
+                            <option value="CONTRACT">Vertrag</option>
+                            <option value="CERTIFICATE">Zertifikat</option>
+                            <option value="REPORT">Bericht</option>
+                            <option value="OTHER">Sonstiges</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="upload-document-file">Datei *</label>
+                        <div class="upload-zone-large" id="upload-zone-large">
+                            <i class="ti ti-upload"></i>
+                            <p>Datei hier ablegen oder klicken zum Auswählen</p>
+                            <p class="text-secondary" style="font-size: 0.875rem; margin-top: 0.5rem;">
+                                Unterstützte Formate: PDF, JPG, PNG, DOCX, XLSX
+                            </p>
+                            <input type="file" id="upload-document-file" style="display: none;" 
+                                   accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx" required>
+                        </div>
+                        <div id="upload-file-info" class="upload-file-info" style="display: none;">
+                            <div class="upload-file-preview">
+                                <i class="ti ti-file"></i>
+                                <div>
+                                    <strong id="upload-file-name"></strong>
+                                    <span class="text-secondary" id="upload-file-size"></span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="clearUploadFile()">
+                                    <i class="ti ti-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-upload"></i> Hochladen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Export</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Format *</label>
+                    <select id="export-format" required>
+                        <option value="pdf">PDF</option>
+                        <option value="docx">Word (.docx)</option>
+                        <option value="xlsx">Excel (.xlsx)</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Inhalt</label>
+                    <div class="text-secondary" style="margin-bottom: 6px;">
+                        Geschäftsinformationen werden immer exportiert.
+                    </div>
+                    <div class="checkbox-group checkbox-group-align">
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="export-process" checked>
+                            <span>Prozessschritte</span>
+                        </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="export-risks">
+                            <span>Risiko-Register</span>
+                        </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="export-contacts">
+                            <span>Beteiligte Kontakte</span>
+                        </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="export-discount-participation">
+                            <span>Discount Participation Table</span>
+                        </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="export-documents">
+                            <span>Dokumentindex</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                <button id="export-execute-btn" class="btn btn-primary">Exportieren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deal Overview Export Modal -->
+    <div id="deal-overview-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Deal-Übersicht exportieren</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Ausrichtung</label>
+                    <div class="export-options">
+                        <label><input type="radio" name="deal-overview-orientation" value="portrait" checked> Hochformat</label>
+                        <label><input type="radio" name="deal-overview-orientation" value="landscape"> Querformat</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                <button type="button" id="deal-overview-export-btn" class="btn btn-primary">Export starten</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generator Hub Modal -->
+    <div id="generator-hub-modal" class="modal modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Generator &amp; Exports</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body generator-hub-body">
+                <div class="generator-hub-sidebar">
+                    <div class="form-group">
+                        <label for="generator-deal-select">Geschäft *</label>
+                        <select id="generator-deal-select" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="generator-language-select">Sprache</label>
+                        <select id="generator-language-select">
+                            <option value="DE" selected>DE</option>
+                            <option value="EN">EN</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Parteien/Personen</label>
+                        <div id="generator-contact-list" class="generator-contact-list"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-line">
+                            <input type="checkbox" id="generator-include-dpt">
+                            Discount Participation Table als Annex (wenn erlaubt)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <div class="text-secondary">
+                            Hinweis: Vorhandene Uploads sind weiterhin im Dokumente-Tab verfügbar.
+                        </div>
+                    </div>
+                </div>
+                <div class="generator-hub-main">
+                    <div id="generator-step-list" class="generator-step-list"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-cancel">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discount Participation Modal -->
+    <div id="discount-participation-modal" class="modal modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Discount Participation Table</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="dpt-section">
+                    <div class="dpt-header-row">
+                        <div>
+                            <h4>Gross Discount Verteilung</h4>
+                            <p class="text-secondary">Basis für die prozentuale Verteilung aller Positionen.</p>
+                        </div>
+                        <div class="dpt-gross-inputs">
+                            <div class="dpt-gross-input">
+                                <label for="dpt-gross-input">Gross Discount (%)</label>
+                                <input type="number" id="dpt-gross-input" min="0" max="30" step="0.01">
+                            </div>
+                            <div class="dpt-gross-input">
+                                <label for="dpt-gold-kg-input">Goldmenge (kg)</label>
+                                <input type="number" id="dpt-gold-kg-input" min="0" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="dpt-active-allocations"></div>
+                    <div id="dpt-summary" class="dpt-summary"></div>
+                </div>
+
+                <div class="dpt-section">
+                    <h4>Platzhalter-Positionen</h4>
+                    <p class="text-secondary">Aktivieren Sie zusätzliche Positionen und tragen Sie Prozentwerte ein.</p>
+                    <div id="dpt-placeholder-allocations"></div>
+                </div>
+
+                <div class="dpt-section">
+                    <h4>Service Provider Kosten (EUR)</h4>
+                    <div id="dpt-providers"></div>
+                    <div id="dpt-provider-summary" class="dpt-summary"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="dpt-reset-btn" class="btn btn-secondary">Zurücksetzen auf Default 12%</button>
+                <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                <button type="button" id="dpt-save-btn" class="btn btn-primary">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRC Planning Modals -->
+    <div id="grc-planning-modal" class="modal modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>GRC 5000 Produktionsplanung</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body grc-planning-body">
+                <div class="grc-section">
+                    <div class="grc-section-header">
+                        <h4>Geschäftsauswahl</h4>
+                        <span class="text-secondary">FIFO-Planung nach Anlieferung</span>
+                    </div>
+                    <div class="grc-grid grc-grid-4">
+                        <div class="form-group">
+                            <label for="grc-deal-select">Geschäft (G-xxxx)</label>
+                            <select id="grc-deal-select"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div class="grc-inline-actions">
+                                <button type="button" id="grc-new-btn" class="btn btn-secondary btn-sm">Neu</button>
+                                <button type="button" id="grc-save-btn" class="btn btn-primary btn-sm">Speichern</button>
+                                <button type="button" id="grc-duplicate-btn" class="btn btn-secondary btn-sm">Duplizieren</button>
+                                <button type="button" id="grc-delete-btn" class="btn btn-secondary btn-sm">Löschen</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="grc-arrival-date">Ankunft / 1st Fire Assay</label>
+                            <input type="date" id="grc-arrival-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="grc-ware">Ware</label>
+                            <select id="grc-ware">
+                                <option value="Doré">Doré Gold Bars</option>
+                                <option value="Hallmark">Gestempeltes Tafelgold/Hallmark</option>
+                                <option value="Gold Dust / Nuggets / Lumps">Gold Dust / Nuggets / Lumps</option>
+                                <option value="Scrap / Melt">Scrap / Melt</option>
+                                <option value="Granulat / Grain">Granulat / Grain</option>
+                                <option value="Münzen / Medaillen">Münzen / Medaillen</option>
+                                <option value="Cast Bars">Cast Bars (gegossene Barren)</option>
+                                <option value="Minted Bars">Minted Bars (geprägte Barren)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="grc-term-months">Laufzeit (Monate)</label>
+                            <input type="number" id="grc-term-months" min="1" max="60" value="12">
+                        </div>
+                        <div class="form-group grc-notes-group">
+                            <label for="grc-notes">Notizen</label>
+                            <textarea id="grc-notes" rows="2" placeholder="Optionale Hinweise zur Planung"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grc-section">
+                    <div class="grc-section-header">
+                        <h4>Staffel-Mengen (kg/Monat)</h4>
+                        <span class="text-secondary">M1..Mn lückenlos, fehlende Monate = 0</span>
+                    </div>
+                    <div class="grc-table-wrap">
+                        <table class="grc-table" id="grc-schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>M von</th>
+                                    <th>M bis</th>
+                                    <th>kg/Monat</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <button type="button" id="grc-add-schedule-row" class="btn btn-secondary btn-sm">+ Staffel hinzufügen</button>
+                    </div>
+                </div>
+
+                <div class="grc-section">
+                    <div class="grc-section-header">
+                        <h4>Ergebnis</h4>
+                        <span class="text-secondary">Kapazität/Monat = min(Versicherung, Maschinen*Schichten)</span>
+                    </div>
+                    <div class="grc-kpi-grid" id="grc-kpi-grid"></div>
+                    <div id="grc-warnings" class="grc-alerts"></div>
+                    <div class="grc-table-wrap">
+                        <table class="grc-table" id="grc-allocation-table">
+                            <thead>
+                                <tr>
+                                    <th>Monat</th>
+                                    <th>Angefordert</th>
+                                    <th>Allokiert</th>
+                                    <th>Kapazität</th>
+                                    <th>Belegt</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="grc-chatbot-panel" class="grc-chatbot-panel">
+                    <div class="grc-chatbot-header">
+                        <h4>Planungs-Chatbot</h4>
+                        <button type="button" id="grc-chatbot-close" class="btn btn-secondary btn-sm">Schließen</button>
+                    </div>
+                    <div id="grc-chatbot-messages" class="grc-chatbot-messages"></div>
+                    <div class="grc-chatbot-input">
+                        <textarea id="grc-chatbot-input" rows="2" placeholder="Frage zur Planung, Kapazität, Versicherung..."></textarea>
+                        <button type="button" id="grc-chatbot-send" class="btn btn-primary btn-sm">Senden</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="grc-preferences-btn" class="btn btn-secondary">Preferences</button>
+                <button type="button" id="grc-calendar-btn" class="btn btn-secondary">Monatsübersicht</button>
+                <button type="button" id="grc-export-btn" class="btn btn-secondary">Export</button>
+                <button type="button" id="grc-chatbot-btn" class="btn btn-secondary">Chatbot</button>
+                <button type="button" id="grc-reset-btn" class="btn btn-secondary">Auf Minimal-Setup zurücksetzen</button>
+                <button type="button" class="btn btn-secondary modal-cancel">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="grc-preferences-modal" class="modal modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>GRC 5000 Preferences</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body grc-planning-body">
+                <div class="grc-section">
+                    <div class="grc-section-header">
+                        <h4>Kapazität</h4>
+                        <span class="text-secondary">Maschinen/Schichten/Yield</span>
+                    </div>
+                    <div class="grc-grid grc-grid-3">
+                        <div class="form-group">
+                            <label for="grc-pref-machines">Maschinen (1..4)</label>
+                            <input type="number" id="grc-pref-machines" min="1" max="4" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="grc-pref-shifts">Schichten/Tag</label>
+                            <select id="grc-pref-shifts">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="grc-pref-working-days">Arbeitstage/Monat</label>
+                            <input type="number" id="grc-pref-working-days" min="1" max="31" value="22">
+                        </div>
+                    </div>
+                    <div class="grc-table-wrap">
+                        <table class="grc-table" id="grc-yield-table">
+                            <thead>
+                                <tr>
+                                    <th>Schichten/Tag</th>
+                                    <th>kg/Tag/Maschine</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="grc-section">
+                    <div class="grc-section-header">
+                        <h4>Versicherung</h4>
+                        <span class="text-secondary">Harte Grenze (Compliance)</span>
+                    </div>
+                    <div class="grc-grid grc-grid-3">
+                        <div class="form-group">
+                            <label for="grc-pref-insured-cap">Versicherte Monatsgrenze (kg)</label>
+                            <input type="number" id="grc-pref-insured-cap" min="1" value="400">
+                        </div>
+                    </div>
+                    <div class="grc-table-wrap">
+                        <table class="grc-table" id="grc-insurance-table">
+                            <thead>
+                                <tr>
+                                    <th>Cap (kg)</th>
+                                    <th>EUR/Monat</th>
+                                    <th>Quelle</th>
+                                    <th>Confidence</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="grc-info">
+                        <i class="ti ti-info-circle"></i>
+                        Versicherung kann meist monatlich angepasst werden; Erhöhung lohnt bei hoher Auslastung vs. Zusatzmaschinen.
+                    </div>
+                </div>
+                <div class="grc-section">
+                    <div class="grc-section-header">
+                        <h4>Zusatzkosten</h4>
+                        <span class="text-secondary">Schätzung/Planwerte</span>
+                    </div>
+                    <div class="grc-grid grc-grid-4">
+                        <div class="form-group">
+                            <label for="grc-pref-labor">Labor/Schicht EUR</label>
+                            <input type="number" id="grc-pref-labor" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="grc-pref-utilities">Utilities/Maschine EUR</label>
+                            <input type="number" id="grc-pref-utilities" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="grc-pref-chemicals">Chemicals EUR/kg</label>
+                            <input type="number" id="grc-pref-chemicals" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="grc-pref-other">Sonstige EUR/Monat</label>
+                            <input type="number" id="grc-pref-other" min="0" step="0.01">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="grc-pref-reset" class="btn btn-secondary">Auf Minimal-Setup zurücksetzen</button>
+                <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                <button type="button" id="grc-pref-save" class="btn btn-primary">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="grc-calendar-modal" class="modal modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Monatsübersicht</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body grc-calendar-body">
+                <div class="grc-calendar-toolbar">
+                    <button type="button" id="grc-calendar-prev" class="btn btn-secondary btn-sm">◀</button>
+                    <div class="grc-calendar-title" id="grc-calendar-title"></div>
+                    <button type="button" id="grc-calendar-next" class="btn btn-secondary btn-sm">▶</button>
+                    <div class="grc-calendar-jump">
+                        <input type="month" id="grc-calendar-jump">
+                        <button type="button" id="grc-calendar-jump-btn" class="btn btn-secondary btn-sm">Gehe zu</button>
+                    </div>
+                </div>
+                <div id="grc-calendar-grid" class="grc-calendar-grid"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="grc-calendar-export" class="btn btn-secondary">Drucken/Exportieren dieses Monats</button>
+                <button type="button" class="btn btn-secondary modal-cancel">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="grc-export-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>GRC Export</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Export-Format</label>
+                    <div class="export-options">
+                        <label><input type="radio" name="grc-export-format" value="pdf" checked> PDF</label>
+                        <label><input type="radio" name="grc-export-format" value="docx"> Word (.docx)</label>
+                        <label><input type="radio" name="grc-export-format" value="xlsx"> Excel (.xlsx)</label>
+                        <label><input type="radio" name="grc-export-format" value="csv"> CSV (.csv)</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Export-Umfang</label>
+                    <div class="export-options">
+                        <label><input type="radio" name="grc-export-scope" value="deal" checked> Aktuelles Geschäft – Planungsreport</label>
+                        <label><input type="radio" name="grc-export-scope" value="all"> Alle Geschäfte – Warteschlange & Kapazität</label>
+                        <label><input type="radio" name="grc-export-scope" value="calendar"> Monatsübersicht Kalender – ausgewählter Monat</label>
+                        <label><input type="radio" name="grc-export-scope" value="prefs"> Preferences & Kostenmatrix</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Optionen</label>
+                    <div class="export-options">
+                        <label><input type="checkbox" id="grc-export-summary"> Nur Zusammenfassung</label>
+                        <label><input type="checkbox" id="grc-export-warnings" checked> Mit Warnungen/Red Flags</label>
+                        <label><input type="checkbox" id="grc-export-header" checked> Kopfzeile mit Stand/Version/Datum</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                <button type="button" id="grc-export-run" class="btn btn-primary">Export starten</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Chatbot -->
+    <div id="chatbot-container" class="chatbot-container">
+        <div class="chatbot-header">
+            <h3><i class="ti ti-robot"></i> Prozess-Assistent</h3>
+            <button id="chatbot-close" class="btn-icon">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages">
+            <div class="chat-message bot-message">
+                <div class="message-content">
+                    <i class="ti ti-robot"></i>
+                    <div>
+                        <p>Hallo! Ich bin Ihr Prozess-Assistent für den Goldankauf-Prozess.</p>
+                        <p>Sie können mir Fragen stellen zu:</p>
+                        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                            <li>Prozessschritten</li>
+                            <li>Erforderlichen Dokumenten</li>
+                            <li>Risiken und Compliance</li>
+                            <li>Zoll- und Importverfahren</li>
+                            <li>Assay und Qualitätsprüfung</li>
+                        </ul>
+                        <p style="margin-top: 0.5rem;">Wie kann ich Ihnen helfen?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-input-container">
+            <input type="text" id="chatbot-input" placeholder="Frage stellen..." autocomplete="off">
+            <button id="chatbot-send" class="btn btn-primary">
+                <i class="ti ti-send"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="supabase.js"></script>
+    <script type="module" src="exports.js"></script>
+    <script type="module" src="chatbot.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
