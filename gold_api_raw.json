@@ -1,1 +1,7 @@
-{"name":"Gold","price":4598.0,"symbol":"XAU","updatedAt":"2026-01-18T14:20:14Z","updatedAtReadable":"a few seconds ago"}
+{
+    "name": "Gold",
+    "price": 4598.0,
+    "symbol": "XAU",
+    "updatedAt": "2026-01-18T14:20:14Z",
+    "updatedAtReadable": "a few seconds ago"
+}
