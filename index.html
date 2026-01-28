@@ -41,6 +41,11 @@
                             <i class="ti ti-user-plus"></i> Neuen Account erstellen
                         </button>
                     </div>
+                    <div style="text-align: center; margin-top: 0.75rem;">
+                        <button type="button" id="request-access-btn" class="btn btn-secondary" style="width: 100%;">
+                            <i class="ti ti-mail-plus"></i> Zugang anfragen
+                        </button>
+                    </div>
                     <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
                         <button type="button" id="demo-mode-btn" class="btn" onclick="enableDemoMode(event)" style="width: 100%; background: var(--info); color: white;">
                             <i class="ti ti-eye"></i> Demo-Modus (ohne Anmeldung)
@@ -107,6 +112,9 @@
                     </button>
                     <div class="user-menu">
                         <span id="user-email"></span>
+                        <button id="access-requests-btn" class="btn btn-secondary btn-sm hidden">
+                            <i class="ti ti-user-check"></i> Zugriffsanfragen
+                        </button>
                         <button id="logout-btn" class="btn btn-secondary">Abmelden</button>
                     </div>
                 </div>
@@ -812,6 +820,57 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
                 <button id="export-execute-btn" class="btn btn-primary">Exportieren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Access Request Modal -->
+    <div id="access-request-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Zugang anfragen</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="access-request-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="access-request-name">Name *</label>
+                        <input type="text" id="access-request-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="access-request-email">E-Mail *</label>
+                        <input type="email" id="access-request-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="access-request-company">Firma/Organisation</label>
+                        <input type="text" id="access-request-company">
+                    </div>
+                    <div class="form-group">
+                        <label for="access-request-note">Nachricht</label>
+                        <textarea id="access-request-note" rows="3"></textarea>
+                    </div>
+                    <div id="access-request-status" class="form-hint"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-cancel">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Anfrage senden</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Access Requests Admin Modal -->
+    <div id="access-requests-admin-modal" class="modal modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Zugriffsanfragen</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="access-requests-list" class="access-requests-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-cancel">Schließen</button>
             </div>
         </div>
     </div>

@@ -29,10 +29,13 @@ export async function isAdmin() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
     
+    const adminEmails = ['christophmwolf@googlemail.com'];
     // Check user metadata or create a user_roles table
     // For now, we'll use a simple check via user metadata
     // You should implement proper RBAC based on your requirements
-    return user.user_metadata?.role === 'admin' || user.email?.endsWith('@admin.local');
+    return user.user_metadata?.role === 'admin'
+        || user.email?.endsWith('@admin.local')
+        || adminEmails.includes(user.email);
 }
 
 // Helper function to log audit events

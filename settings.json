@@ -1,0 +1,11 @@
+{
+  "auth": {
+    "enabled": true,
+    "users": [
+      {
+        "username": "cw",
+        "password": "peasy"
+      }
+    ]
+  }
+}

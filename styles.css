@@ -486,6 +486,25 @@ body {
     flex-wrap: wrap;
 }
 
+.access-requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.access-request-item {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+}
+
+.access-request-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
 @media (max-width: 900px) {
     .generator-hub-body {
         grid-template-columns: 1fr;

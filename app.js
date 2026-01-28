@@ -19,12 +19,14 @@ let contactsModalReady = false;
 let currentContactBankDefaults = null;
 let currentContactBankDefaultsContactId = null;
 let demoMode = false; // Demo mode flag
+let appSettings = null;
 let pendingSellerAssignment = null;
 let pendingNewDealSellerContactId = null;
 let discountParticipationDraft = null;
 let lbmaRefreshTimer = null;
 let lastLbmaQuote = null;
 let lastFxRate = null;
+const ACCESS_REQUEST_MODE = true;
 const LBMA_FALLBACK_QUOTE = {
     usd: 2300
 }; // Fallback quote used when live pricing is unavailable.
@@ -354,6 +356,7 @@ function showApp() {
         document.getElementById('user-email').textContent = 'Demo-Modus';
     }
     
+    updateAdminUi();
     loadDashboard();
 }
 
@@ -425,6 +428,10 @@ function setupEventListeners() {
     document.getElementById('login-form').addEventListener('submit', handleLogin);
     document.getElementById('signup-form').addEventListener('submit', handleSignup);
     document.getElementById('show-signup').addEventListener('click', () => {
+        if (ACCESS_REQUEST_MODE) {
+            openAccessRequestModal();
+            return;
+        }
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('signup-form').style.display = 'block';
     });
@@ -432,6 +439,14 @@ function setupEventListeners() {
         document.getElementById('signup-form').style.display = 'none';
         document.getElementById('login-form').style.display = 'block';
     });
+    const requestAccessBtn = document.getElementById('request-access-btn');
+    if (requestAccessBtn) {
+        requestAccessBtn.addEventListener('click', () => openAccessRequestModal());
+    }
+    const accessRequestForm = document.getElementById('access-request-form');
+    if (accessRequestForm) {
+        accessRequestForm.addEventListener('submit', handleAccessRequestSubmit);
+    }
     // Demo mode buttons - check if they exist
     const demoModeBtn = document.getElementById('demo-mode-btn');
     const demoModeBtnSignup = document.getElementById('demo-mode-btn-signup');
@@ -457,6 +472,10 @@ function setupEventListeners() {
     }
     
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
+    const accessRequestsBtn = document.getElementById('access-requests-btn');
+    if (accessRequestsBtn) {
+        accessRequestsBtn.addEventListener('click', () => openAccessRequestsAdminModal());
+    }
     
     // Dashboard
     document.getElementById('new-deal-btn').addEventListener('click', () => {
@@ -891,6 +910,14 @@ async function handleLogin(e) {
 
 async function handleSignup(e) {
     e.preventDefault();
+    if (ACCESS_REQUEST_MODE) {
+        const errorDiv = document.getElementById('signup-error');
+        if (errorDiv) {
+            errorDiv.textContent = 'Registrierung ist deaktiviert. Bitte nutzen Sie \"Zugang anfragen\".';
+            errorDiv.classList.add('show');
+        }
+        return;
+    }
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     const passwordConfirm = document.getElementById('signup-password-confirm').value;
@@ -953,6 +980,137 @@ async function handleSignup(e) {
         showLoading(false);
         errorDiv.textContent = `Fehler: ${err.message || 'Unbekannter Fehler. Bitte überprüfen Sie Ihre Supabase-Konfiguration.'}`;
         errorDiv.classList.add('show');
+    }
+}
+
+function openAccessRequestModal() {
+    const statusEl = document.getElementById('access-request-status');
+    if (statusEl) statusEl.textContent = '';
+    document.getElementById('access-request-form')?.reset();
+    openModal('access-request-modal');
+}
+
+async function handleAccessRequestSubmit(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById('access-request-status');
+    if (statusEl) statusEl.textContent = 'Sende Anfrage...';
+    if (!supabase) {
+        if (statusEl) statusEl.textContent = 'Supabase ist nicht konfiguriert.';
+        return;
+    }
+    const payload = {
+        full_name: document.getElementById('access-request-name').value.trim(),
+        email: document.getElementById('access-request-email').value.trim().toLowerCase(),
+        company: document.getElementById('access-request-company').value.trim() || null,
+        note: document.getElementById('access-request-note').value.trim() || null,
+        status: 'PENDING'
+    };
+    if (!payload.full_name || !payload.email) {
+        if (statusEl) statusEl.textContent = 'Bitte Name und E-Mail angeben.';
+        return;
+    }
+    try {
+        const { data, error } = await supabase
+            .from('access_requests')
+            .insert(payload)
+            .select()
+            .single();
+        if (error) {
+            console.error('Access request insert failed:', error);
+            if (statusEl) statusEl.textContent = 'Anfrage konnte nicht gespeichert werden.';
+            return;
+        }
+        try {
+            await supabase.functions.invoke('access-request-notify', {
+                body: {
+                    request_id: data.id,
+                    email: payload.email,
+                    full_name: payload.full_name,
+                    company: payload.company,
+                    note: payload.note
+                }
+            });
+        } catch (err) {
+            console.warn('Access request notify failed:', err);
+        }
+        if (statusEl) statusEl.textContent = 'Anfrage gesendet. Sie erhalten eine Rückmeldung per E-Mail.';
+    } catch (err) {
+        console.error('Access request failed:', err);
+        if (statusEl) statusEl.textContent = 'Anfrage konnte nicht gesendet werden.';
+    }
+}
+
+async function updateAdminUi() {
+    const btn = document.getElementById('access-requests-btn');
+    if (!btn) return;
+    try {
+        const admin = await isAdmin();
+        btn.classList.toggle('hidden', !admin);
+    } catch (err) {
+        btn.classList.add('hidden');
+    }
+}
+
+async function openAccessRequestsAdminModal() {
+    await loadAccessRequests();
+    openModal('access-requests-admin-modal');
+}
+
+async function loadAccessRequests() {
+    const container = document.getElementById('access-requests-list');
+    if (!container) return;
+    container.innerHTML = '<div class="text-secondary">Lade...</div>';
+    if (!supabase) {
+        container.innerHTML = '<div class="text-secondary">Supabase nicht verfügbar.</div>';
+        return;
+    }
+    const { data, error } = await supabase
+        .from('access_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) {
+        console.error('Access requests load failed:', error);
+        container.innerHTML = '<div class="text-secondary">Keine Zugriffsanfragen verfügbar.</div>';
+        return;
+    }
+    renderAccessRequests(data || []);
+}
+
+function renderAccessRequests(items) {
+    const container = document.getElementById('access-requests-list');
+    if (!container) return;
+    if (!items.length) {
+        container.innerHTML = '<div class="empty-state"><i class="ti ti-user-x"></i><p>Keine offenen Anfragen</p></div>';
+        return;
+    }
+    container.innerHTML = items.map(item => `
+        <div class="access-request-item">
+            <strong>${escapeHtml(item.full_name || '-')}</strong>
+            <div class="text-secondary">${escapeHtml(item.email || '-')}</div>
+            ${item.company ? `<div class="text-secondary">${escapeHtml(item.company)}</div>` : ''}
+            ${item.note ? `<div class="text-secondary" style="margin-top: 6px;">${escapeHtml(item.note)}</div>` : ''}
+            <div class="text-secondary" style="margin-top: 6px;">Status: ${escapeHtml(item.status || 'PENDING')}</div>
+            <div class="access-request-actions">
+                <button class="btn btn-sm btn-primary" data-action="approve" data-id="${item.id}">Freigeben</button>
+                <button class="btn btn-sm btn-secondary" data-action="reject" data-id="${item.id}">Ablehnen</button>
+            </div>
+        </div>
+    `).join('');
+    container.querySelectorAll('button[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => handleAccessRequestDecision(btn.dataset.id, btn.dataset.action));
+    });
+}
+
+async function handleAccessRequestDecision(requestId, action) {
+    if (!supabase) return;
+    try {
+        await supabase.functions.invoke('access-request-approve', {
+            body: { request_id: requestId, action }
+        });
+        await loadAccessRequests();
+    } catch (err) {
+        console.error('Access request decision failed:', err);
+        alert('Aktion konnte nicht ausgeführt werden.');
     }
 }
 
