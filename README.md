@@ -1,6 +1,6 @@
 # Goldankauf Prozess-Management System
 
-Eine moderne, responsive Web-App zur Verwaltung des vollständigen Prozesses des Goldankaufs (Doré Gold Bars oder gestempeltes Tafelgold/Hallmark) aus afrikanischen Ländern bis zur Raffination auf 999,9, Zahlung und Abholung in Pforzheim.
+Eine moderne, responsive Web-App zur Verwaltung des vollständigen Prozesses des Goldankaufs (Doré Gold Bars oder gestempeltes Tafelgold/Hallmark) aus afrikanischen Ländern bis zur Raffination auf 999,9, Zahlung und Abholung in Pforzheim, Deutschland.
 
 ## Features
 
