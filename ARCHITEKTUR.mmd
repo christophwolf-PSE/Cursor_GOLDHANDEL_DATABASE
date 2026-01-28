@@ -1,0 +1,58 @@
+flowchart LR
+  subgraph UI["Frontend (Browser)"]
+    HTML[index.html]
+    CSS[styles.css]
+    APP[app.js]
+    GEN[generator.js]
+    EXP[exports.js]
+    GRC[grc-planning.js]
+  end
+
+  subgraph Libs["Client Libraries (CDN)"]
+    JSPDF[jsPDF + AutoTable]
+    XLSX[SheetJS]
+    DOCX[docx.js]
+  end
+
+  subgraph Supa["Supabase Backend"]
+    DB[(Postgres)]
+    AUTH[Auth]
+    STORAGE[(Storage)]
+  end
+
+  subgraph Seeds["Seeds / Fallbacks"]
+    SEEDCAT[seed_1_document_catalog.sql]
+    SEEDDOC[seed_2_document_templates.sql]
+    SEEDEMAIL[seed_3_email_templates.sql]
+    FALLDOC[src/domain/document_templates_seed.multi.json]
+    FALLEM[src/domain/email_templates_seed.multi.json]
+  end
+
+  HTML --> APP
+  CSS --> HTML
+  APP -->|Generator Hub| GEN
+  APP -->|Exports| EXP
+  APP -->|Planning| GRC
+
+  EXP --> JSPDF
+  EXP --> XLSX
+  EXP --> DOCX
+  GRC --> JSPDF
+  GRC --> XLSX
+  GRC --> DOCX
+
+  APP --> AUTH
+  APP --> DB
+  APP --> STORAGE
+  GEN --> DB
+  GEN --> STORAGE
+
+  SEEDCAT --> DB
+  SEEDDOC --> DB
+  SEEDEMAIL --> DB
+
+  FALLDOC -.fallback.-> GEN
+  FALLEM -.fallback.-> APP
+
+  classDef db fill:#f6f6f6,stroke:#666;
+  class DB,STORAGE db;

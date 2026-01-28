@@ -26,6 +26,8 @@ let discountParticipationDraft = null;
 let lbmaRefreshTimer = null;
 let lastLbmaQuote = null;
 let lastFxRate = null;
+let currentKycProfileId = null;
+let currentKycRole = 'Buyer';
 const ACCESS_REQUEST_MODE = true;
 const LBMA_FALLBACK_QUOTE = {
     usd: 2300
@@ -37,6 +39,49 @@ window.getAllContacts = () => allContacts;
 
 // Make currentDeal globally available for exports
 window.currentDeal = currentDeal;
+window.setGeneratorDealContext = async (dealId) => {
+    if (!dealId) {
+        currentDeal = null;
+        currentDealSteps = [];
+        window.currentDeal = null;
+        return false;
+    }
+    if (!supabase) {
+        console.warn('Generator deal context: Supabase not available');
+        return false;
+    }
+    if (currentDeal?.id === dealId && currentDealSteps.length) {
+        return true;
+    }
+    try {
+        const { data: deal, error: dealError } = await supabase
+            .from('deals')
+            .select('*')
+            .eq('id', dealId)
+            .single();
+        if (dealError || !deal) {
+            console.error('Generator deal context: failed to load deal', dealError);
+            return false;
+        }
+        currentDeal = deal;
+        window.currentDeal = deal;
+        const { data: steps, error: stepsError } = await supabase
+            .from('deal_steps')
+            .select('*')
+            .eq('deal_id', dealId)
+            .order('step_no', { ascending: true });
+        if (stepsError) {
+            console.error('Generator deal context: failed to load steps', stepsError);
+            currentDealSteps = [];
+        } else {
+            currentDealSteps = steps || [];
+        }
+        return true;
+    } catch (error) {
+        console.error('Generator deal context: unexpected error', error);
+        return false;
+    }
+};
 
 // Make enableDemoMode globally available
 window.enableDemoMode = enableDemoMode;
@@ -159,6 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await preloadLogoAssets();
     logLogoAssetStatus();
     setupEventListeners();
+    disableAutofillForKyc();
     setupDarkMode();
     initializeChatbot();
     initGrcPlanning();
@@ -232,6 +278,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         showLogin();
     }
 });
+
+function disableAutofillForKyc() {
+    const form = document.getElementById('kyc-form');
+    if (!form) return;
+    form.setAttribute('autocomplete', 'off');
+    form.setAttribute('data-form-type', 'other');
+    form.setAttribute('data-lpignore', 'true');
+    const fields = form.querySelectorAll('input, select, textarea');
+    fields.forEach((field, idx) => {
+        field.setAttribute('autocomplete', 'off');
+        field.setAttribute('data-form-type', 'other');
+        field.setAttribute('data-lpignore', 'true');
+        field.setAttribute('data-dashlane-disabled', 'true');
+        if (!field.getAttribute('name')) {
+            field.setAttribute('name', `kyc-field-${idx}`);
+        }
+    });
+    const roleSelect = document.getElementById('kyc-role-select');
+    if (roleSelect) {
+        roleSelect.setAttribute('autocomplete', 'off');
+        roleSelect.setAttribute('data-form-type', 'other');
+        roleSelect.setAttribute('data-lpignore', 'true');
+        roleSelect.setAttribute('data-dashlane-disabled', 'true');
+    }
+}
 
 // ============================================
 // Authentication
@@ -500,6 +571,57 @@ function setupEventListeners() {
     const discountBtn = document.getElementById('discount-participation-btn');
     if (discountBtn) {
         discountBtn.addEventListener('click', () => openDiscountParticipationModal());
+    }
+
+    const kycSaveBtn = document.getElementById('kyc-save-btn');
+    if (kycSaveBtn) {
+        kycSaveBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await saveKycProfile();
+        });
+    }
+    const kycCreateContactsBtn = document.getElementById('kyc-create-contacts-btn');
+    if (kycCreateContactsBtn) {
+        kycCreateContactsBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await createContactsFromKyc();
+        });
+    }
+    const kycCleanupBtn = document.getElementById('kyc-cleanup-btn');
+    if (kycCleanupBtn) {
+        kycCleanupBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await cleanupKycSignedPdfs();
+        });
+    }
+    const kycUploadBtn = document.getElementById('kyc-upload-btn');
+    if (kycUploadBtn) {
+        kycUploadBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await handleKycSignedUpload();
+        });
+    }
+    const kycRoleSelect = document.getElementById('kyc-role-select');
+    if (kycRoleSelect) {
+        kycRoleSelect.addEventListener('change', async () => {
+            const previousRole = currentKycRole || 'Buyer';
+            const nextRole = kycRoleSelect.value || 'Buyer';
+            if (previousRole === nextRole) return;
+
+            if (currentDeal?.id) {
+                const hasUnsaved = !currentKycProfileId && kycHasData(collectKycFormValues());
+                if (hasUnsaved) {
+                    alert('Bitte zuerst speichern, bevor die KYC-Rolle gewechselt wird.');
+                    kycRoleSelect.value = previousRole;
+                    return;
+                }
+                await maybeMoveKycProfile(currentDeal.id, previousRole, nextRole);
+                currentKycRole = nextRole;
+                await loadDealKyc(currentDeal.id);
+            } else {
+                currentKycRole = nextRole;
+            }
+        });
     }
     
     // Commodity type change
@@ -2323,6 +2445,7 @@ async function loadDealDetail(dealId) {
         // Load other data
         await loadDealDocuments(dealId);
         await loadDealContacts(dealId);
+        await loadDealKyc(dealId);
         await loadDealRisks(dealId);
         await loadDealAudit(dealId);
         
@@ -2419,6 +2542,7 @@ async function loadDemoDealDetail(dealId) {
     renderDocuments([]);
     renderRisks([]);
     renderAudit([]);
+    await loadDealKyc(dealId);
     
     // Show detail view - ensure views are properly switched
     const dashboardView = document.getElementById('dashboard-view');
@@ -4154,6 +4278,780 @@ async function loadDealContacts(dealId) {
     } else {
         renderDealBanks(bankInfos || []);
     }
+}
+
+// ============================================
+// KYC / CIS
+// ============================================
+async function loadDealKyc(dealId) {
+    const statusEl = document.getElementById('kyc-status');
+    if (statusEl) {
+        statusEl.textContent = '';
+        statusEl.classList.remove('status-success', 'status-error');
+        statusEl.classList.add('status-muted');
+    }
+
+    const roleSelect = document.getElementById('kyc-role-select');
+    if (roleSelect) {
+        currentKycRole = roleSelect.value || currentKycRole || 'Buyer';
+    }
+
+    if (demoMode || window.demoMode) {
+        currentKycProfileId = null;
+        window.currentDealKyc = null;
+        applyKycFormValues({
+            company_name: 'Koras PMR GmbH',
+            authorized_signatory_name: 'Thorsten Koras',
+            authorized_signatory_title: 'General Manager',
+            country: 'Germany',
+            city: 'Engelsbrand',
+            postal_code: '75331',
+            business_email: 'info@koras-group.de',
+            company_roles: ['Buyer'],
+            type_of_business: 'Sales / trade',
+            incorporation_date: '2019-08-14',
+            shareholder_owner: 'Thorsten Koras',
+            employees_count: 5,
+            primary_contact_first_name: 'Thorsten',
+            primary_contact_last_name: 'Koras',
+            primary_contact_function: 'General Manager',
+            primary_contact_phone: '+49 7082 79283 00',
+            primary_contact_email: 'thorsten.koras@koras-group.de',
+            bank_name: 'HypoVereinsbank',
+            iban: 'DE09 67020190 0033115229',
+            swift_bic: 'HYVEDEMM489',
+            products: ['Gold'],
+            trade_references: [
+                { customer: 'Adani', country: 'India' },
+                { customer: 'Aurus', country: 'Russia' },
+                { customer: 'Heng Juan', country: 'China' }
+            ]
+        });
+        await loadKycUploads(dealId, currentKycRole || 'Buyer');
+        if (statusEl) statusEl.textContent = 'Demo-Daten geladen';
+        return;
+    }
+
+    if (!supabase) return;
+
+    const { data, error } = await supabase
+        .from('kyc_profiles')
+        .select('*')
+        .eq('deal_id', dealId)
+        .eq('party_role', currentKycRole)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error loading KYC profile:', error);
+        if (statusEl) statusEl.textContent = 'KYC-Daten konnten nicht geladen werden';
+        applyKycFormValues({});
+        currentKycProfileId = null;
+        return;
+    }
+
+    currentKycProfileId = data?.id || null;
+    window.currentDealKyc = data || null;
+    applyKycFormValues(data || {});
+    await loadKycUploads(dealId, currentKycRole || 'Buyer');
+    if (statusEl) {
+        statusEl.textContent = data
+            ? `KYC-Daten geladen (${currentKycRole})`
+            : `Keine KYC-Daten vorhanden (${currentKycRole})`;
+        statusEl.classList.remove('status-success', 'status-error');
+        statusEl.classList.add('status-muted');
+    }
+}
+
+async function saveKycProfile() {
+    const statusEl = document.getElementById('kyc-status');
+    if (!currentDeal?.id) {
+        alert('Kein Geschäft ausgewählt');
+        return;
+    }
+    if (demoMode || window.demoMode) {
+        if (statusEl) statusEl.textContent = 'Demo-Modus: Keine Speicherung';
+        return;
+    }
+    if (!supabase) return;
+
+    const payload = collectKycFormValues();
+    payload.deal_id = currentDeal.id;
+    payload.deal_no = currentDeal.deal_no;
+    payload.party_role = currentKycRole || 'Buyer';
+    if (currentKycProfileId) {
+        payload.id = currentKycProfileId;
+    }
+
+    const { data, error } = await supabase
+        .from('kyc_profiles')
+        .upsert(payload, { onConflict: 'deal_id,party_role' })
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error saving KYC profile:', error);
+        if (statusEl) {
+            statusEl.textContent = 'Speichern fehlgeschlagen';
+            statusEl.classList.remove('status-success', 'status-muted');
+            statusEl.classList.add('status-error');
+        }
+        alert(`KYC speichern fehlgeschlagen: ${error.message}`);
+        return;
+    }
+
+    currentKycProfileId = data?.id || currentKycProfileId;
+    window.currentDealKyc = data || window.currentDealKyc || null;
+    if (statusEl) {
+        statusEl.textContent = `KYC-Daten gespeichert (${currentKycRole})`;
+        statusEl.classList.remove('status-error', 'status-muted');
+        statusEl.classList.add('status-success');
+        setTimeout(() => {
+            if (statusEl.textContent === `KYC-Daten gespeichert (${currentKycRole})`) {
+                statusEl.classList.remove('status-success');
+                statusEl.classList.add('status-muted');
+            }
+        }, 4000);
+    }
+}
+
+function collectKycFormValues() {
+    const companyRoles = [
+        document.getElementById('kyc-role-buyer')?.checked ? 'Buyer' : null,
+        document.getElementById('kyc-role-seller')?.checked ? 'Seller' : null,
+        document.getElementById('kyc-role-producer')?.checked ? 'Producer' : null
+    ].filter(Boolean);
+
+    const products = Array.from(document.querySelectorAll('.kyc-product'))
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+    const bankContacts = parseDelimitedLines(
+        document.getElementById('kyc-bank-contacts')?.value || '',
+        ['function', 'name', 'phone', 'email']
+    );
+
+    const tradeRefs = parseDelimitedLines(
+        document.getElementById('kyc-trade-references')?.value || '',
+        ['customer', 'country']
+    );
+
+    const fixturesLastThree = getInputValue('kyc-fixtures-last-three');
+
+    const cifValue = document.getElementById('kyc-cif-basis')?.value || '';
+
+    return {
+        company_name: getInputValue('kyc-company-name'),
+        authorized_signatory_name: getInputValue('kyc-authorized-name'),
+        authorized_signatory_title: getInputValue('kyc-authorized-title'),
+        passport_no: getInputValue('kyc-passport-no'),
+        street: getInputValue('kyc-street'),
+        city: getInputValue('kyc-city'),
+        postal_code: getInputValue('kyc-postal-code'),
+        country: getInputValue('kyc-country'),
+        phone: getInputValue('kyc-phone'),
+        business_email: getInputValue('kyc-email'),
+        business_website: getInputValue('kyc-website'),
+        tax_id: getInputValue('kyc-tax-id'),
+        vat_no: getInputValue('kyc-vat-no'),
+        company_roles: companyRoles,
+        product_raw_material: Boolean(document.getElementById('kyc-product-raw-material')?.checked),
+        product_refined_bars: Boolean(document.getElementById('kyc-product-refined-bars')?.checked),
+        product_refinery_machinery: Boolean(document.getElementById('kyc-product-refinery-machinery')?.checked),
+        type_of_business: getInputValue('kyc-type-of-business'),
+        incorporation_date: getInputValue('kyc-incorporation-date') || null,
+        shareholder_owner: getInputValue('kyc-shareholder-owner'),
+        employees_count: parseNumberValue(getInputValue('kyc-employees-count')),
+        subsidiaries: getInputValue('kyc-subsidiaries'),
+        primary_contact_first_name: getInputValue('kyc-primary-first-name'),
+        primary_contact_last_name: getInputValue('kyc-primary-last-name'),
+        primary_contact_function: getInputValue('kyc-primary-function'),
+        primary_contact_phone: getInputValue('kyc-primary-phone'),
+        primary_contact_email: getInputValue('kyc-primary-email'),
+        legal_counsel_name: getInputValue('kyc-legal-name'),
+        legal_counsel_street: getInputValue('kyc-legal-street'),
+        legal_counsel_postal_code: getInputValue('kyc-legal-postal'),
+        legal_counsel_city: getInputValue('kyc-legal-city'),
+        legal_counsel_country: getInputValue('kyc-legal-country'),
+        legal_counsel_phone: getInputValue('kyc-legal-phone'),
+        legal_counsel_email: getInputValue('kyc-legal-email'),
+        legal_counsel_website: getInputValue('kyc-legal-website'),
+        bank_name: getInputValue('kyc-bank-name'),
+        bank_street: getInputValue('kyc-bank-street'),
+        bank_postal_code: getInputValue('kyc-bank-postal'),
+        bank_city: getInputValue('kyc-bank-city'),
+        bank_country: getInputValue('kyc-bank-country'),
+        bank_phone: getInputValue('kyc-bank-phone'),
+        bank_officer: getInputValue('kyc-bank-officer'),
+        bank_officer_phone: getInputValue('kyc-bank-officer-phone'),
+        bank_officer_email: getInputValue('kyc-bank-officer-email'),
+        account_name: getInputValue('kyc-account-name'),
+        account_number: getInputValue('kyc-account-number'),
+        iban: getInputValue('kyc-iban'),
+        swift_bic: getInputValue('kyc-swift-bic'),
+        account_signatory: getInputValue('kyc-account-signatory'),
+        bank_contacts: bankContacts,
+        bank_reference_letter_appendix: Boolean(document.getElementById('kyc-bank-reference-letter')?.checked),
+        products: products,
+        trade_references: tradeRefs,
+        cif_basis: cifValue === 'yes' ? true : (cifValue === 'no' ? false : null),
+        fixtures_last_three: fixturesLastThree || null
+    };
+}
+
+function applyKycFormValues(profile) {
+    setInputValue('kyc-company-name', profile.company_name);
+    setInputValue('kyc-authorized-name', profile.authorized_signatory_name);
+    setInputValue('kyc-authorized-title', profile.authorized_signatory_title);
+    setInputValue('kyc-passport-no', profile.passport_no);
+    setInputValue('kyc-street', profile.street);
+    setInputValue('kyc-city', profile.city);
+    setInputValue('kyc-postal-code', profile.postal_code);
+    setInputValue('kyc-country', profile.country);
+    setInputValue('kyc-phone', profile.phone);
+    setInputValue('kyc-email', profile.business_email);
+    setInputValue('kyc-website', profile.business_website);
+    setInputValue('kyc-tax-id', profile.tax_id);
+    setInputValue('kyc-vat-no', profile.vat_no);
+
+    const roles = Array.isArray(profile.company_roles) ? profile.company_roles : [];
+    setCheckboxValue('kyc-role-buyer', roles.includes('Buyer'));
+    setCheckboxValue('kyc-role-seller', roles.includes('Seller'));
+    setCheckboxValue('kyc-role-producer', roles.includes('Producer'));
+
+    setCheckboxValue('kyc-product-raw-material', profile.product_raw_material);
+    setCheckboxValue('kyc-product-refined-bars', profile.product_refined_bars);
+    setCheckboxValue('kyc-product-refinery-machinery', profile.product_refinery_machinery);
+
+    setInputValue('kyc-type-of-business', profile.type_of_business);
+    setInputValue('kyc-incorporation-date', formatDateInput(profile.incorporation_date));
+    setInputValue('kyc-shareholder-owner', profile.shareholder_owner);
+    setInputValue('kyc-employees-count', profile.employees_count);
+    setInputValue('kyc-subsidiaries', profile.subsidiaries);
+
+    setInputValue('kyc-primary-first-name', profile.primary_contact_first_name);
+    setInputValue('kyc-primary-last-name', profile.primary_contact_last_name);
+    setInputValue('kyc-primary-function', profile.primary_contact_function);
+    setInputValue('kyc-primary-phone', profile.primary_contact_phone);
+    setInputValue('kyc-primary-email', profile.primary_contact_email);
+
+    setInputValue('kyc-legal-name', profile.legal_counsel_name);
+    setInputValue('kyc-legal-street', profile.legal_counsel_street);
+    setInputValue('kyc-legal-postal', profile.legal_counsel_postal_code);
+    setInputValue('kyc-legal-city', profile.legal_counsel_city);
+    setInputValue('kyc-legal-country', profile.legal_counsel_country);
+    setInputValue('kyc-legal-phone', profile.legal_counsel_phone);
+    setInputValue('kyc-legal-email', profile.legal_counsel_email);
+    setInputValue('kyc-legal-website', profile.legal_counsel_website);
+
+    setInputValue('kyc-bank-name', profile.bank_name);
+    setInputValue('kyc-bank-street', profile.bank_street);
+    setInputValue('kyc-bank-postal', profile.bank_postal_code);
+    setInputValue('kyc-bank-city', profile.bank_city);
+    setInputValue('kyc-bank-country', profile.bank_country);
+    setInputValue('kyc-bank-phone', profile.bank_phone);
+    setInputValue('kyc-bank-officer', profile.bank_officer);
+    setInputValue('kyc-bank-officer-phone', profile.bank_officer_phone);
+    setInputValue('kyc-bank-officer-email', profile.bank_officer_email);
+    setInputValue('kyc-account-name', profile.account_name);
+    setInputValue('kyc-account-number', profile.account_number);
+    setInputValue('kyc-iban', profile.iban);
+    setInputValue('kyc-swift-bic', profile.swift_bic);
+    setInputValue('kyc-account-signatory', profile.account_signatory);
+
+    setInputValue('kyc-bank-contacts', formatDelimitedLines(profile.bank_contacts, ['function', 'name', 'phone', 'email']));
+    setInputValue('kyc-trade-references', formatDelimitedLines(profile.trade_references, ['customer', 'country']));
+    setCheckboxValue('kyc-bank-reference-letter', profile.bank_reference_letter_appendix);
+    setInputValue('kyc-fixtures-last-three', profile.fixtures_last_three);
+
+    const productValues = Array.isArray(profile.products) ? profile.products : [];
+    document.querySelectorAll('.kyc-product').forEach(cb => {
+        cb.checked = productValues.includes(cb.value);
+    });
+
+    const cifValue = profile.cif_basis === true ? 'yes' : (profile.cif_basis === false ? 'no' : '');
+    setInputValue('kyc-cif-basis', cifValue);
+}
+
+function parseDelimitedLines(text, keys) {
+    const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+    return lines.map(line => {
+        const parts = line.split('|').map(part => part.trim());
+        const entry = {};
+        keys.forEach((key, idx) => {
+            entry[key] = parts[idx] || '';
+        });
+        return entry;
+    });
+}
+
+function formatDelimitedLines(items, keys) {
+    if (!Array.isArray(items)) return '';
+    return items
+        .map(item => keys.map(key => item?.[key] || '').join(' | '))
+        .filter(line => line.replace(/\s|\|/g, '').length > 0)
+        .join('\n');
+}
+
+function getInputValue(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+}
+
+function parseNumberValue(value) {
+    if (value === '' || value === null || value === undefined) return null;
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+}
+
+function setInputValue(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = value ?? '';
+}
+
+function setCheckboxValue(id, checked) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.checked = Boolean(checked);
+}
+
+function formatDateInput(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().slice(0, 10);
+}
+
+async function createContactsFromKyc() {
+    const statusEl = document.getElementById('kyc-status');
+    if (!currentDeal?.id) {
+        alert('Kein Geschäft ausgewählt');
+        return;
+    }
+    if (!window.currentDealKyc) {
+        alert('Keine KYC-Daten geladen. Bitte erst speichern und erneut laden.');
+        return;
+    }
+    if (demoMode || window.demoMode) {
+        if (statusEl) {
+            statusEl.textContent = 'Demo-Modus: Kontakte werden nicht erstellt';
+            statusEl.classList.remove('status-success', 'status-error');
+            statusEl.classList.add('status-muted');
+        }
+        return;
+    }
+    if (!supabase) return;
+
+    const kyc = window.currentDealKyc || {};
+    const role = currentKycRole || 'Buyer';
+
+    const bankContacts = Array.isArray(kyc.bank_contacts) ? kyc.bank_contacts : [];
+    const bankContactEntries = bankContacts
+        .map((contact) => {
+            const functionLabel = (contact.function || '').trim();
+            const roleLabel = functionLabel
+                ? `Bank Officer (${role}) - ${functionLabel}`
+                : `Bank Officer (${role})`;
+            return {
+                role: roleLabel,
+                full_name: contact.name || '',
+                company: kyc.bank_name || '',
+                email: contact.email || '',
+                phone: contact.phone || '',
+                notes: functionLabel || null
+            };
+        })
+        .filter(entry => entry.full_name || entry.company);
+
+    const contactsToCreate = [
+        {
+            role: role,
+            full_name: kyc.authorized_signatory_name || '',
+            company: kyc.company_name || '',
+            email: kyc.business_email || '',
+            phone: kyc.phone || ''
+        },
+        {
+            role: `Legal Counsel (${role})`,
+            full_name: kyc.legal_counsel_name || '',
+            company: kyc.legal_counsel_name ? '' : '',
+            email: kyc.legal_counsel_email || '',
+            phone: kyc.legal_counsel_phone || ''
+        },
+        {
+            role: `Bank Officer (${role})`,
+            full_name: kyc.bank_officer || '',
+            company: kyc.bank_name || '',
+            email: kyc.bank_officer_email || '',
+            phone: kyc.bank_officer_phone || kyc.bank_phone || ''
+        }
+    ].concat(bankContactEntries).filter(c => c.full_name || c.company);
+
+    if (!contactsToCreate.length) {
+        alert('Keine Kontaktinformationen im KYC gefunden.');
+        return;
+    }
+
+    let mainContactId = null;
+    for (const entry of contactsToCreate) {
+        const contactId = await findOrCreateContact(entry);
+        if (contactId) {
+            await linkContactToDeal(contactId, entry.role, currentDeal.id, entry.notes);
+            if (!mainContactId && entry.role === role) {
+                mainContactId = contactId;
+            }
+        }
+    }
+
+    if (mainContactId) {
+        await upsertDealBankAccountFromKyc(mainContactId, currentDeal.id, kyc);
+    }
+
+    if (statusEl) {
+        statusEl.textContent = `Kontakte aus KYC erstellt (${role})`;
+        statusEl.classList.remove('status-error', 'status-muted');
+        statusEl.classList.add('status-success');
+    }
+    await loadDealContacts(currentDeal.id);
+}
+
+async function handleKycSignedUpload() {
+    const statusEl = document.getElementById('kyc-status');
+    if (!currentDeal?.id) {
+        alert('Kein Geschäft ausgewählt');
+        return;
+    }
+    const fileInput = document.getElementById('kyc-signed-file');
+    const file = fileInput?.files?.[0];
+    if (!file) {
+        alert('Bitte PDF-Datei auswählen');
+        return;
+    }
+    if (!supabase) return;
+    const role = (currentKycRole || 'Buyer').toUpperCase();
+    const docType = `KYC_SIGNED_${role}`;
+    try {
+        await uploadDocument(currentDeal.id, currentDeal.deal_no, 3, file, docType);
+        if (fileInput) fileInput.value = '';
+        await loadKycUploads(currentDeal.id, currentKycRole || 'Buyer');
+        if (statusEl) {
+            statusEl.textContent = `KYC-PDF hochgeladen (${currentKycRole})`;
+            statusEl.classList.remove('status-error', 'status-muted');
+            statusEl.classList.add('status-success');
+        }
+    } catch (error) {
+        console.error('Error uploading KYC PDF:', error);
+        if (statusEl) {
+            statusEl.textContent = 'KYC-PDF Upload fehlgeschlagen';
+            statusEl.classList.remove('status-success', 'status-muted');
+            statusEl.classList.add('status-error');
+        }
+        alert(`KYC-PDF Upload fehlgeschlagen: ${error.message || error}`);
+    }
+}
+
+async function loadKycUploads(dealId, role) {
+    const listEl = document.getElementById('kyc-upload-list');
+    const uploadStatusEl = document.getElementById('kyc-upload-status');
+    if (!listEl) return;
+    if (!dealId) {
+        listEl.innerHTML = '<p class="text-secondary">Kein Geschäft ausgewählt.</p>';
+        if (uploadStatusEl) {
+            uploadStatusEl.textContent = '';
+            uploadStatusEl.classList.remove('status-success', 'status-error');
+            uploadStatusEl.classList.add('status-muted');
+        }
+        return;
+    }
+    if (demoMode || window.demoMode) {
+        listEl.innerHTML = '<p class="text-secondary">Demo-Modus: Keine Uploads.</p>';
+        if (uploadStatusEl) {
+            uploadStatusEl.textContent = 'KYC-PDF: Demo';
+            uploadStatusEl.classList.remove('status-success', 'status-error');
+            uploadStatusEl.classList.add('status-muted');
+        }
+        return;
+    }
+    if (!supabase) return;
+
+    const docType = `KYC_SIGNED_${(role || 'Buyer').toUpperCase()}`;
+    const { data, error } = await supabase
+        .from('documents')
+        .select('id, file_name, file_path, uploaded_at')
+        .eq('deal_id', dealId)
+        .eq('doc_type', docType)
+        .order('uploaded_at', { ascending: false });
+
+    if (error) {
+        console.error('Error loading KYC uploads:', error);
+        listEl.innerHTML = '<p class="text-secondary">KYC Uploads konnten nicht geladen werden.</p>';
+        if (uploadStatusEl) {
+            uploadStatusEl.textContent = 'KYC-PDF: Fehler';
+            uploadStatusEl.classList.remove('status-success', 'status-muted');
+            uploadStatusEl.classList.add('status-error');
+        }
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        listEl.innerHTML = '<p class="text-secondary">Keine KYC PDFs hochgeladen.</p>';
+        if (uploadStatusEl) {
+            uploadStatusEl.textContent = 'KYC-PDF: fehlt';
+            uploadStatusEl.classList.remove('status-success', 'status-error');
+            uploadStatusEl.classList.add('status-muted');
+        }
+        return;
+    }
+
+    if (uploadStatusEl) {
+        uploadStatusEl.textContent = 'KYC-PDF: vorhanden';
+        uploadStatusEl.classList.remove('status-error', 'status-muted');
+        uploadStatusEl.classList.add('status-success');
+    }
+
+    listEl.innerHTML = data.map(doc => `
+        <div class="document-item">
+            <div>
+                <strong>${doc.file_name}</strong>
+                <div class="text-secondary" style="font-size: 0.75rem;">
+                    ${new Date(doc.uploaded_at).toLocaleString('de-DE')}
+                </div>
+            </div>
+            <div class="document-actions">
+                <button class="btn btn-sm btn-secondary" onclick="downloadDocumentFile('${doc.file_path}', '${doc.file_name}')">
+                    <i class="ti ti-download"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function upsertDealBankAccountFromKyc(contactId, dealId, kyc) {
+    const bankName = (kyc.bank_name || '').trim();
+    const iban = (kyc.iban || '').trim();
+    const bic = (kyc.swift_bic || '').trim();
+    const accountHolder = (kyc.account_name || kyc.account_signatory || '').trim();
+    if (!bankName && !iban && !bic && !accountHolder) return;
+
+    const { data: existing, error: findError } = await supabase
+        .from('deal_bank_accounts')
+        .select('id')
+        .eq('deal_id', dealId)
+        .eq('contact_id', contactId)
+        .eq('bank_name', bankName)
+        .eq('iban', iban)
+        .eq('bic', bic)
+        .eq('account_holder', accountHolder)
+        .limit(1);
+
+    if (!findError && existing && existing.length) {
+        return;
+    }
+
+    const { error: insertError } = await supabase
+        .from('deal_bank_accounts')
+        .insert({
+            deal_id: dealId,
+            contact_id: contactId,
+            bank_name: bankName || null,
+            iban: iban || null,
+            bic: bic || null,
+            account_holder: accountHolder || null
+        });
+    if (insertError) {
+        console.error('Error inserting bank info from KYC:', insertError);
+    }
+}
+
+async function findOrCreateContact(entry) {
+    const fullName = (entry.full_name || '').trim();
+    const company = (entry.company || '').trim();
+    if (!fullName && !company) return null;
+
+    const { data: existing, error: findError } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('full_name', fullName)
+        .eq('company', company)
+        .limit(1);
+
+    if (!findError && existing && existing.length) {
+        return existing[0].id;
+    }
+
+    const { data: created, error: insertError } = await supabase
+        .from('contacts')
+        .insert({
+            full_name: fullName || company || 'Unbekannt',
+            role: entry.role || null,
+            company: company || null,
+            email: entry.email || null,
+            phone: entry.phone || null
+        })
+        .select('id')
+        .single();
+
+    if (insertError) {
+        console.error('Error creating contact from KYC:', insertError);
+        return null;
+    }
+    return created?.id || null;
+}
+
+async function linkContactToDeal(contactId, role, dealId, notes = null) {
+    if (!contactId || !dealId) return;
+    const { data: existing, error: findError } = await supabase
+        .from('deal_contacts')
+        .select('id, notes')
+        .eq('deal_id', dealId)
+        .eq('contact_id', contactId)
+        .limit(1);
+    if (!findError && existing && existing.length) {
+        const existingNotes = existing[0].notes || '';
+        if (notes && !existingNotes) {
+            await supabase
+                .from('deal_contacts')
+                .update({ notes })
+                .eq('id', existing[0].id);
+        }
+        return;
+    }
+    const { error: insertError } = await supabase
+        .from('deal_contacts')
+        .insert({
+            deal_id: dealId,
+            contact_id: contactId,
+            role: role || null,
+            notes: notes || null
+        });
+    if (insertError) {
+        console.error('Error linking contact to deal:', insertError);
+    }
+}
+
+function kycHasData(payload) {
+    if (!payload) return false;
+    const ignoredKeys = new Set(['deal_id', 'deal_no', 'party_role', 'id']);
+    return Object.entries(payload).some(([key, value]) => {
+        if (ignoredKeys.has(key)) return false;
+        if (Array.isArray(value)) return value.length > 0;
+        if (typeof value === 'boolean') return value === true;
+        if (typeof value === 'number') return Number.isFinite(value);
+        if (value && typeof value === 'object') return Object.keys(value).length > 0;
+        return value !== null && value !== undefined && String(value).trim() !== '';
+    });
+}
+
+async function maybeMoveKycProfile(dealId, fromRole, toRole) {
+    if (!supabase || !dealId) return;
+    if (!currentKycProfileId) return;
+    const { data: target, error: targetError } = await supabase
+        .from('kyc_profiles')
+        .select('id')
+        .eq('deal_id', dealId)
+        .eq('party_role', toRole)
+        .maybeSingle();
+    if (targetError) {
+        console.error('Error checking target KYC role:', targetError);
+        return;
+    }
+    if (target?.id) {
+        return;
+    }
+    const confirmMove = confirm(
+        `KYC-Daten von ${fromRole} nach ${toRole} verschieben? (Zielrolle ist leer)`
+    );
+    if (!confirmMove) return;
+
+    const { error: moveError } = await supabase
+        .from('kyc_profiles')
+        .update({ party_role: toRole })
+        .eq('id', currentKycProfileId);
+    if (moveError) {
+        console.error('Error moving KYC profile role:', moveError);
+        alert(`KYC-Rolle konnte nicht verschoben werden: ${moveError.message}`);
+        return;
+    }
+
+    const fromDocType = `KYC_SIGNED_${String(fromRole || '').toUpperCase()}`;
+    const toDocType = `KYC_SIGNED_${String(toRole || '').toUpperCase()}`;
+    const { error: docMoveError } = await supabase
+        .from('documents')
+        .update({ doc_type: toDocType })
+        .eq('deal_id', dealId)
+        .eq('doc_type', fromDocType);
+    if (docMoveError) {
+        console.error('Error moving KYC signed PDFs:', docMoveError);
+        alert(`KYC-PDF konnte nicht verschoben werden: ${docMoveError.message}`);
+    }
+}
+
+async function cleanupKycSignedPdfs() {
+    if (!supabase) return;
+    if (!currentDeal?.id) {
+        alert('Kein Geschäft ausgewählt');
+        return;
+    }
+    const role = (currentKycRole || 'Buyer').toUpperCase();
+    const targetType = `KYC_SIGNED_${role}`;
+
+    const { data, error } = await supabase
+        .from('documents')
+        .select('id, doc_type, file_name')
+        .eq('deal_id', currentDeal.id)
+        .like('doc_type', 'KYC_SIGNED_%');
+
+    if (error) {
+        console.error('Error loading KYC PDFs:', error);
+        alert('KYC-PDFs konnten nicht geladen werden.');
+        return;
+    }
+
+    const docs = data || [];
+    if (docs.length === 0) {
+        alert('Keine KYC-PDFs gefunden.');
+        return;
+    }
+
+    const grouped = docs.reduce((acc, doc) => {
+        acc[doc.doc_type] = acc[doc.doc_type] || [];
+        acc[doc.doc_type].push(doc);
+        return acc;
+    }, {});
+
+    if (grouped[targetType]?.length) {
+        alert(`KYC-PDF ist bereits bei ${currentKycRole} hinterlegt.`);
+        return;
+    }
+
+    const otherTypes = Object.keys(grouped).filter(type => type !== targetType);
+    if (otherTypes.length === 0) {
+        alert('Keine KYC-PDFs zum Umhängen gefunden.');
+        return;
+    }
+    if (otherTypes.length > 1) {
+        alert('Mehrere KYC-PDF Rollen gefunden. Bitte im Dokumente-Tab manuell prüfen.');
+        return;
+    }
+
+    const fromType = otherTypes[0];
+    const confirmMove = confirm(`KYC-PDF von ${fromType.replace('KYC_SIGNED_', '')} zu ${currentKycRole} verschieben?`);
+    if (!confirmMove) return;
+
+    const { error: updateError } = await supabase
+        .from('documents')
+        .update({ doc_type: targetType })
+        .eq('deal_id', currentDeal.id)
+        .eq('doc_type', fromType);
+
+    if (updateError) {
+        console.error('Error moving KYC PDFs:', updateError);
+        alert(`KYC-PDF konnte nicht verschoben werden: ${updateError.message}`);
+        return;
+    }
+
+    await loadKycUploads(currentDeal.id, currentKycRole || 'Buyer');
+    alert('KYC-PDF verschoben.');
 }
 
 function renderDealContacts(links) {

@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>Master Nummerierung – Generator & Exporte</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; margin: 24px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 0.95em; white-space: nowrap; }
+
+table { border-collapse: collapse; width: 100%; margin: 8px 0 24px; table-layout: fixed; }
+th, td { border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; }
+th { background: #f6f6f6; text-align: left; }
+
+th:nth-child(1), td:nth-child(1) { width: 16%; }
+th:nth-child(2), td:nth-child(2) { width: 10%; }
+th:nth-child(3), td:nth-child(3) { width: 28%; }
+th:nth-child(4), td:nth-child(4) { width: 46%; }
+
+</style>
+</head>
+<body>
+<h1>Master Nummerierung – Generator & Exporte (Dateinamen-Referenz)</h1>
+<p><strong>Tipp:</strong> In der Tabelle kannst du mit der Tab-Taste in die Spalte <strong>Filename</strong> springen und direkt kopieren.</p>
+<h2>Schritt 1 – Kontaktanbahnung Seller/Intermediaries</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S1.1 NDA-NCNDA</td><td>Generated</td><td>NDA / NCNDA (light)</td><td><code>S1.1_NDA-NCNDA_NDA_NCNDA_light.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 2 – Buyer-Placement</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S2.1 FEE-BUYER</td><td>Generated</td><td>Buyer-Side Intermediary Fee Agreement</td><td><code>S2.1_FEE-BUYER_Buyer-Side_Intermediary_Fee_Agreement.docx</code></td></tr>
+<tr><td>S2.2 FEE-SELLER</td><td>Generated</td><td>Seller-Side Intermediary Fee Agreement</td><td><code>S2.2_FEE-SELLER_Seller-Side_Intermediary_Fee_Agreement.docx</code></td></tr>
+<tr><td>S2.3 FEE-CHAIN</td><td>Generated</td><td>Full Chain Master Fee & NCNDA Agreement</td><td><code>S2.3_FEE-CHAIN_Full_Chain_Master_Fee_and_NCNDA_Agreement.docx</code></td></tr>
+<tr><td>S2.4 DPT</td><td>Generated</td><td>Discount Participation Table (Annex)</td><td><code>S2.4_DPT_Discount_Participation_Table_Annex.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 3 – KYC/AML/Sanktions-/Embargoprüfung</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S3.1 KYC-CIS</td><td>Generated</td><td>KYC / CIS Form</td><td><code>S3.1_KYC-CIS_KYC_CIS_Form.docx</code></td></tr>
+<tr><td>S3.2 SCREEN-LOG</td><td>Generated</td><td>Sanctions/PEP/Embargo Screening Log</td><td><code>S3.2_SCREEN-LOG_Sanctions_PEP_Embargo_Screening_Log.docx</code></td></tr>
+<tr><td>S3.3 SOF-SOW</td><td>Generated</td><td>Source of Funds / Source of Wealth Declaration</td><td><code>S3.3_SOF-SOW_Source_of_Funds_Source_of_Wealth_Declaration.docx</code></td></tr>
+<tr><td>S3.4 ID-UPLOAD</td><td>Upload</td><td>ID/Passport/Company Docs (Upload)</td><td><code>S3.4_ID-UPLOAD_ID_Passport_Company_Docs_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 4 – Chain-of-Custody Dokumentation</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S4.1 COC-TRANSFER</td><td>Generated</td><td>Chain-of-Custody Transfer Record</td><td><code>S4.1_COC-TRANSFER_Chain-of-Custody_Transfer_Record.docx</code></td></tr>
+<tr><td>S4.2 ORIGIN-PROOFS</td><td>Upload</td><td>Origin / Ownership Proofs (Upload)</td><td><code>S4.2_ORIGIN-PROOFS_Origin_Ownership_Proofs_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 5 – SPA-Erstellung/Signatur</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S5.1 SPA</td><td>DOCX Merge</td><td>Sales and Purchase Agreement</td><td><code>S5.1_SPA_Sales_and_Purchase_Agreement.docx</code></td></tr>
+<tr><td>S5.2 SPA-ADD-01</td><td>DOCX Merge</td><td>SPA Addendum-01</td><td><code>S5.2_SPA-ADD-01_SPA_Addendum-01.docx</code></td></tr>
+<tr><td>S5.3 SPA-ADD-02</td><td>DOCX Merge</td><td>SPA Addendum-02</td><td><code>S5.3_SPA-ADD-02_SPA_Addendum-02.docx</code></td></tr>
+<tr><td>S5.4 BCL</td><td>DOCX Merge</td><td>Bank Comfort Letter</td><td><code>S5.4_BCL_Bank_Comfort_Letter.docx</code></td></tr>
+<tr><td>S5.5 PAY-GUAR</td><td>DOCX Merge</td><td>Payment Guarantee Letter</td><td><code>S5.5_PAY-GUAR_Payment_Guarantee_Letter.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 6 – Vorab-Dokumente 72h vor Versand</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S6.1 72H-COVER</td><td>Generated</td><td>72h Shipping Documents Cover Sheet</td><td><code>S6.1_72H-COVER_72h_Shipping_Documents_Cover_Sheet.docx</code></td></tr>
+<tr><td>S6.2 PROFORMA</td><td>Upload/Template</td><td>Proforma Invoice (Upload/Template)</td><td><code>S6.2_PROFORMA_Proforma_Invoice_Upload_Template.docx</code></td></tr>
+<tr><td>S6.3 COO</td><td>Upload</td><td>Certificate of Origin (Upload)</td><td><code>S6.3_COO_Certificate_of_Origin_Upload.docx</code></td></tr>
+<tr><td>S6.4 OWNERSHIP</td><td>Upload</td><td>Ownership Declaration (Upload)</td><td><code>S6.4_OWNERSHIP_Ownership_Declaration_Upload.docx</code></td></tr>
+<tr><td>S6.5 PACKING</td><td>Upload</td><td>Packing List (Upload)</td><td><code>S6.5_PACKING_Packing_List_Upload.docx</code></td></tr>
+<tr><td>S6.6 ASSAY-PRE</td><td>Upload</td><td>Assay Report (Pre) (Upload)</td><td><code>S6.6_ASSAY-PRE_Assay_Report_Pre_Upload.docx</code></td></tr>
+<tr><td>S6.7 AWB</td><td>Upload</td><td>Air Waybill (Upload)</td><td><code>S6.7_AWB_Air_Waybill_Upload.docx</code></td></tr>
+<tr><td>S6.8 EXPORT-PERMIT</td><td>Upload</td><td>Export Permit (Upload)</td><td><code>S6.8_EXPORT-PERMIT_Export_Permit_Upload.docx</code></td></tr>
+<tr><td>S6.9 CUSTOMS-DECL</td><td>Upload</td><td>Customs Declaration (Upload)</td><td><code>S6.9_CUSTOMS-DECL_Customs_Declaration_Upload.docx</code></td></tr>
+<tr><td>S6.10 TAX-REC</td><td>Upload</td><td>Tax Receipt (Upload)</td><td><code>S6.10_TAX-REC_Tax_Receipt_Upload.docx</code></td></tr>
+<tr><td>S6.11 INSURANCE</td><td>Upload</td><td>Insurance Certificate (Upload)</td><td><code>S6.11_INSURANCE_Insurance_Certificate_Upload.docx</code></td></tr>
+<tr><td>S6.12 FREE-CLEAR</td><td>Upload</td><td>Free & Clear Declaration (Upload)</td><td><code>S6.12_FREE-CLEAR_Free_and_Clear_Declaration_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 7 – Lufttransport (versichert, Zollversiegelung)</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S7.1 LOG-INS</td><td>Generated</td><td>Logistics & Insurance Instructions</td><td><code>S7.1_LOG-INS_Logistics_and_Insurance_Instructions.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 8 – Zollbereich Frankfurt/Main: Vorprüfung</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S8.1 IMPORT-INSTR</td><td>Generated</td><td>Customs/Import Instruction Sheet</td><td><code>S8.1_IMPORT-INSTR_Customs_Import_Instruction_Sheet.docx</code></td></tr>
+<tr><td>S8.2 CUSTOMS-NOTES</td><td>Upload</td><td>Customs/Handling Notes (Upload)</td><td><code>S8.2_CUSTOMS-NOTES_Customs_Handling_Notes_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 9 – Sicherheitslogistik</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S9.1 SEC-HANDOVER</td><td>Generated</td><td>Security Logistics Handover Record</td><td><code>S9.1_SEC-HANDOVER_Security_Logistics_Handover_Record.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 10 – Ankunft Pforzheim: Annahmebestätigung</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S10.1 RECEIVE-CERT</td><td>Generated</td><td>Acceptance & Receiving Certificate</td><td><code>S10.1_RECEIVE-CERT_Acceptance_and_Receiving_Certificate.docx</code></td></tr>
+<tr><td>S10.2 PHOTOS-SEALS</td><td>Upload</td><td>Photos/Seal Numbers (Upload)</td><td><code>S10.2_PHOTOS-SEALS_Photos_Seal_Numbers_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 11 – Fire Assay + optional Second Assay</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S11.1 ASSAY-REQ</td><td>Generated</td><td>Assay Request Form</td><td><code>S11.1_ASSAY-REQ_Assay_Request_Form.docx</code></td></tr>
+<tr><td>S11.2 ASSAY-2ND</td><td>Upload</td><td>Second Assay Request/Report (Upload)</td><td><code>S11.2_ASSAY-2ND_Second_Assay_Request_Report_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 12 – Verbindlicher Assay Report</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S12.1 ASSAY-FINAL-COVER</td><td>Generated</td><td>Final Assay Report Cover + Summary</td><td><code>S12.1_ASSAY-FINAL-COVER_Final_Assay_Report_Cover_Summary.docx</code></td></tr>
+<tr><td>S12.2 ASSAY-FINAL</td><td>Upload</td><td>Final Assay Report (Signed Upload)</td><td><code>S12.2_ASSAY-FINAL_Final_Assay_Report_Signed_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 13 – Preisfestlegung (LBMA Fixing Bezug)</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S13.1 PRICE-FIX</td><td>Generated</td><td>Price Fixing Sheet (LBMA reference)</td><td><code>S13.1_PRICE-FIX_Price_Fixing_Sheet_LBMA_reference.docx</code></td></tr>
+<tr><td>S13.2 FX-OVERRIDE</td><td>Upload</td><td>Deal FX Override Evidence (Upload)</td><td><code>S13.2_FX-OVERRIDE_Deal_FX_Override_Evidence_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 14 – Zahlung innerhalb vertraglicher Frist</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S14.1 SETTLEMENT</td><td>Generated</td><td>Payment Instruction / Settlement Sheet</td><td><code>S14.1_SETTLEMENT_Payment_Instruction_Settlement_Sheet.docx</code></td></tr>
+<tr><td>S14.2 PAY-CONF</td><td>Upload</td><td>Payment Confirmation (Upload)</td><td><code>S14.2_PAY-CONF_Payment_Confirmation_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 15 – Ownership Transfer</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S15.1 OWN-TRANSFER</td><td>Generated</td><td>Ownership Transfer Certificate</td><td><code>S15.1_OWN-TRANSFER_Ownership_Transfer_Certificate.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 16 – Raffination zu 999,9</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S16.1 REFINE-ORDER</td><td>Generated</td><td>Refining Order / Processing Instruction</td><td><code>S16.1_REFINE-ORDER_Refining_Order_Processing_Instruction.docx</code></td></tr>
+<tr><td>S16.2 REFINE-CERT</td><td>Upload</td><td>Refinery Certificate (Upload)</td><td><code>S16.2_REFINE-CERT_Refinery_Certificate_Upload.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 17 – Lagerung/Abholung Buyer</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S17.1 STORAGE-RELEASE</td><td>Generated</td><td>Storage & Buyer Release / Collection Note</td><td><code>S17.1_STORAGE-RELEASE_Storage_and_Buyer_Release_Collection_Note.docx</code></td></tr>
+</tbody></table>
+<h2>Schritt 18 – Abschlussdokumentation</h2>
+<table><thead><tr><th>Code</th><th>Status</th><th>Long name</th><th>Filename</th></tr></thead><tbody>
+<tr><td>S18.1 CLOSING-INDEX</td><td>Generated</td><td>Closing Dossier Index</td><td><code>S18.1_CLOSING-INDEX_Closing_Dossier_Index.docx</code></td></tr>
+<tr><td>S18.2 AUDIT-EXPORT</td><td>Auto</td><td>Audit Log Export (auto)</td><td><code>S18.2_AUDIT-EXPORT_Audit_Log_Export_auto.docx</code></td></tr>
+</tbody></table>
+</body>
+</html>

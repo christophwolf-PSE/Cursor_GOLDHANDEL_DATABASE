@@ -1,0 +1,29 @@
+flowchart TD
+  START([Start]) --> LOGIN[Login/Signup Screen]
+  LOGIN -->|Login ok| DASH[Dashboard]
+
+  DASH -->|+ Neues Geschaeft| NEWDEAL[Modal: Neues Geschaeft]
+  DASH -->|Deal anklicken| DEAL[Deal Detail View]
+  DASH -->|Generator & Exports| GENHUB[Modal: Generator & Exports]
+  DASH -->|Export Deal| EXPORT[Modal: Deal Export]
+  DASH -->|Deal-Uebersicht Export| OVERVIEW[Modal: Deal Overview Export]
+  DASH -->|GRC 5000 Planung| GRC[Modal: GRC 5000 Planung]
+
+  DEAL -->|Bearbeiten| EDITDEAL[Modal: Deal bearbeiten]
+  DEAL -->|GRC 5000 Planung| GRC
+  DEAL -->|Risiko hinzufuegen| RISK[Modal: Risiko]
+  DEAL -->|Discount Participation| DPT[Modal: Discount Participation Table]
+  DEAL -->|Dokument hochladen| UPLOADDOC[Modal: Dokument Upload]
+  DEAL -->|Kontakte| CONTACTS[Modal: Kontakte]
+
+  GENHUB -->|Sprache/Deal waehlen| GENOPTIONS[Generator Optionen]
+  GENHUB -->|Erstellen/Download| GENOUTPUT[PDF Preview / Storage Download]
+
+  GRC -->|Preferences| GRCPREF[Modal: GRC Preferences]
+  GRC -->|Monatsuebersicht| GRCCAL[Modal: GRC Kalender]
+  GRC -->|Export| GRCEXP[Modal: GRC Export]
+  GRC -->|Chatbot| GRCCHAT[Panel: GRC Chatbot]
+
+  EXPORT -->|Start Export| EXPORTRUN[CSV/XLSX/PDF/DOCX Download]
+  OVERVIEW -->|Start Export| OVERVIEWRUN[PDF Download]
+  GRCEXP -->|Export starten| GRCEXPRUN[PDF/DOCX/XLSX/CSV]

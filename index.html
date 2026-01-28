@@ -221,6 +221,9 @@
                     <button class="tab-btn" data-tab="contacts">
                         <i class="ti ti-address-book"></i> Kontakte
                     </button>
+                    <button class="tab-btn" data-tab="kyc">
+                        <i class="ti ti-id-badge"></i> KYC/CIS
+                    </button>
                     <button class="tab-btn" data-tab="risks">
                         <i class="ti ti-alert-triangle"></i> Risiken
                     </button>
@@ -267,6 +270,366 @@
                             <h4>Bankinformationen</h4>
                         </div>
                         <div id="deal-bank-list" class="contacts-grid"></div>
+                    </div>
+
+                    <!-- KYC Tab -->
+                    <div id="tab-kyc" class="tab-pane">
+                        <div class="card">
+                                <div class="card-header">
+                                    <h3>KYC / CIS</h3>
+                                    <div class="card-header-actions kyc-actions">
+                                        <label class="field-inline">
+                                            <span class="text-secondary">KYC Rolle</span>
+                                            <select id="kyc-role-select">
+                                                <option value="Buyer">Buyer</option>
+                                                <option value="Seller">Seller</option>
+                                                <option value="Producer">Producer</option>
+                                            </select>
+                                        </label>
+                                        <span id="kyc-upload-status" class="text-secondary"></span>
+                                        <span id="kyc-status" class="text-secondary"></span>
+                                        <button id="kyc-cleanup-btn" class="btn btn-sm btn-secondary">
+                                            <i class="ti ti-broom"></i> KYC-PDFs aufräumen
+                                        </button>
+                                        <button id="kyc-create-contacts-btn" class="btn btn-sm btn-secondary">
+                                            <i class="ti ti-address-book"></i> Kontakte aus KYC erstellen
+                                        </button>
+                                        <button id="kyc-save-btn" class="btn btn-sm btn-primary">
+                                            <i class="ti ti-device-floppy"></i> Speichern
+                                        </button>
+                                    </div>
+                                </div>
+                            <div class="card-body">
+                                <div class="kyc-upload">
+                                    <div class="kyc-upload-header">
+                                        <h4>KYC signiert (PDF Upload)</h4>
+                                        <span class="text-secondary">Pro Rolle: Buyer/Seller/Producer</span>
+                                    </div>
+                                    <div class="kyc-upload-actions">
+                                        <input type="file" id="kyc-signed-file" accept=".pdf,application/pdf">
+                                        <button id="kyc-upload-btn" class="btn btn-sm btn-secondary">
+                                            <i class="ti ti-upload"></i> PDF hochladen
+                                        </button>
+                                    </div>
+                                    <div id="kyc-upload-list" class="kyc-upload-list"></div>
+                                </div>
+                                <form id="kyc-form" autocomplete="off" data-form-type="other" data-lpignore="true">
+                                    <div class="kyc-section">
+                                        <h4>Company Address</h4>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-company-name">Company Name</label>
+                                                <input type="text" id="kyc-company-name">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-authorized-name">Authorized Signatory (Name)</label>
+                                                <input type="text" id="kyc-authorized-name">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-authorized-title">Authorized Signatory (Title)</label>
+                                                <input type="text" id="kyc-authorized-title">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-passport-no">Passport No.</label>
+                                                <input type="text" id="kyc-passport-no">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-street">Street</label>
+                                                <input type="text" id="kyc-street">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-city">City</label>
+                                                <input type="text" id="kyc-city">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-postal-code">Postal Code</label>
+                                                <input type="text" id="kyc-postal-code">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-country">Country</label>
+                                                <input type="text" id="kyc-country">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-phone">Phone No.</label>
+                                                <input type="text" id="kyc-phone">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-email">Business Corporate E-mail</label>
+                                                <input type="email" id="kyc-email">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-website">Business Website</label>
+                                                <input type="text" id="kyc-website">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-tax-id">Tax Identification Number</label>
+                                                <input type="text" id="kyc-tax-id">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-vat-no">VAT/BTW Number</label>
+                                                <input type="text" id="kyc-vat-no">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="kyc-section">
+                                        <h4>Company Data</h4>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Are you a Seller or Buyer</label>
+                                                <div class="checkbox-group checkbox-group-align">
+                                                    <label><input type="checkbox" id="kyc-role-buyer"> Buyer</label>
+                                                    <label><input type="checkbox" id="kyc-role-seller"> Seller</label>
+                                                    <label><input type="checkbox" id="kyc-role-producer"> Producer</label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-type-of-business">Type of Business</label>
+                                                <input type="text" id="kyc-type-of-business">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Products (Company Data)</label>
+                                                <div class="checkbox-group checkbox-group-align">
+                                                    <label><input type="checkbox" id="kyc-product-raw-material"> Raw material of precious metal</label>
+                                                    <label><input type="checkbox" id="kyc-product-refined-bars"> Refined bars of precious metals</label>
+                                                    <label><input type="checkbox" id="kyc-product-refinery-machinery"> Precious metal refinery machinery</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-incorporation-date">Incorporation Date</label>
+                                                <input type="date" id="kyc-incorporation-date">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-shareholder-owner">Shareholder/Owner</label>
+                                                <input type="text" id="kyc-shareholder-owner">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-employees-count">Total number of Employees</label>
+                                                <input type="number" id="kyc-employees-count" min="0" step="1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-subsidiaries">Subsidiaries</label>
+                                                <input type="text" id="kyc-subsidiaries">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="kyc-section">
+                                        <h4>Primary Contact Person</h4>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-primary-first-name">First Name</label>
+                                                <input type="text" id="kyc-primary-first-name">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-primary-last-name">Last Name</label>
+                                                <input type="text" id="kyc-primary-last-name">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-primary-function">Function</label>
+                                                <input type="text" id="kyc-primary-function">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-primary-phone">Phone No.</label>
+                                                <input type="text" id="kyc-primary-phone">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-primary-email">Business E-mail Address</label>
+                                                <input type="email" id="kyc-primary-email">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="kyc-section">
+                                        <h4>Legal Counsel / Corporate Law Firm</h4>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-legal-name">Name</label>
+                                                <input type="text" id="kyc-legal-name">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-legal-street">Street</label>
+                                                <input type="text" id="kyc-legal-street">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-legal-postal">Postal Code</label>
+                                                <input type="text" id="kyc-legal-postal">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-legal-city">City</label>
+                                                <input type="text" id="kyc-legal-city">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-legal-country">Country</label>
+                                                <input type="text" id="kyc-legal-country">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-legal-phone">Phone No.</label>
+                                                <input type="text" id="kyc-legal-phone">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-legal-email">E-mail</label>
+                                                <input type="email" id="kyc-legal-email">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-legal-website">Website</label>
+                                                <input type="text" id="kyc-legal-website">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="kyc-section">
+                                        <h4>Bank Details</h4>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-bank-name">Bank Name</label>
+                                                <input type="text" id="kyc-bank-name">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-bank-officer">Bank Officer</label>
+                                                <input type="text" id="kyc-bank-officer">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-bank-street">Street</label>
+                                                <input type="text" id="kyc-bank-street">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-bank-city">City</label>
+                                                <input type="text" id="kyc-bank-city">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-bank-postal">Postal Code</label>
+                                                <input type="text" id="kyc-bank-postal">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-bank-country">Country</label>
+                                                <input type="text" id="kyc-bank-country">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-bank-phone">Phone</label>
+                                                <input type="text" id="kyc-bank-phone">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-bank-officer-phone">Direct Phone</label>
+                                                <input type="text" id="kyc-bank-officer-phone">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-bank-officer-email">Direct E-mail address</label>
+                                                <input type="email" id="kyc-bank-officer-email">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-account-name">Account Name</label>
+                                                <input type="text" id="kyc-account-name">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-account-number">Account Number</label>
+                                                <input type="text" id="kyc-account-number">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-iban">IBAN</label>
+                                                <input type="text" id="kyc-iban">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-swift-bic">SWIFT CODE / BIC</label>
+                                                <input type="text" id="kyc-swift-bic">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="kyc-account-signatory">Account Signatory</label>
+                                                <input type="text" id="kyc-account-signatory">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="kyc-bank-contacts">Bank Contact People</label>
+                                            <textarea id="kyc-bank-contacts" class="kyc-textarea" placeholder="Function | Name | Direct Phone | Email (eine Zeile pro Kontakt)"></textarea>
+                                            <div class="form-hint">Format: Funktion | Name | Telefon | E-Mail</div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="checkbox-row">
+                                                <input type="checkbox" id="kyc-bank-reference-letter">
+                                                <span>Bank reference letter in appendix</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="kyc-section">
+                                        <h4>Products supplied/bought</h4>
+                                        <div class="checkbox-group checkbox-group-align">
+                                            <label><input type="checkbox" class="kyc-product" value="Gold"> Gold</label>
+                                            <label><input type="checkbox" class="kyc-product" value="Silver"> Silver</label>
+                                            <label><input type="checkbox" class="kyc-product" value="Platinum"> Platinum</label>
+                                            <label><input type="checkbox" class="kyc-product" value="Palladium"> Palladium</label>
+                                            <label><input type="checkbox" class="kyc-product" value="Rhodium"> Rhodium</label>
+                                            <label><input type="checkbox" class="kyc-product" value="Iridium"> Iridium</label>
+                                            <label><input type="checkbox" class="kyc-product" value="Ruthenium"> Ruthenium</label>
+                                            <label><input type="checkbox" class="kyc-product" value="Other Refinery machinery"> Other Refinery machinery</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="kyc-section">
+                                        <h4>Trade References</h4>
+                                        <div class="form-group">
+                                            <label for="kyc-trade-references">Main Customers</label>
+                                            <textarea id="kyc-trade-references" class="kyc-textarea" placeholder="Customer | Country (eine Zeile pro Eintrag)"></textarea>
+                                            <div class="form-hint">Format: Kunde | Land</div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="kyc-fixtures-last-three">Last three fixtures (appendix)</label>
+                                            <textarea id="kyc-fixtures-last-three" class="kyc-textarea" placeholder="Fixture 1; Fixture 2; Fixture 3"></textarea>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="kyc-cif-basis">Did you ever do a deal on CIF basis?</label>
+                                                <select id="kyc-cif-basis">
+                                                    <option value="">Bitte wählen</option>
+                                                    <option value="yes">Yes</option>
+                                                    <option value="no">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Risks Tab -->
@@ -914,9 +1277,11 @@
                     <div class="form-group">
                         <label for="generator-language-select">Sprache</label>
                         <select id="generator-language-select">
-                            <option value="DE" selected>DE</option>
-                            <option value="EN">EN</option>
+                            <option value="EN" selected>EN</option>
+                            <option value="DE">DE</option>
+                            <option value="FR">FR</option>
                         </select>
+                        <div id="generator-language-note" class="text-secondary" style="margin-top: 0.5rem;"></div>
                     </div>
                     <div class="form-group">
                         <label>Parteien/Personen</label>

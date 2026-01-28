@@ -15,9 +15,10 @@
   {"step_no":4,"sub_no":2,"doc_code":"ORIGIN-PROOFS","title":"Origin / Ownership Proofs (Upload)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
 
   {"step_no":5,"sub_no":1,"doc_code":"SPA","title":"Sales and Purchase Agreement","template_no":"06.1","language":"EN","doc_type":"GENERATED","required":true,"locked_text":true},
-  {"step_no":5,"sub_no":2,"doc_code":"SPA-ADD-02","title":"SPA Addendum-02","template_no":"08","language":"EN","doc_type":"GENERATED","required":false,"locked_text":true},
-  {"step_no":5,"sub_no":3,"doc_code":"BCL","title":"Bank Comfort Letter","template_no":"02","language":"EN","doc_type":"GENERATED","required":false},
-  {"step_no":5,"sub_no":4,"doc_code":"PAY-GUAR","title":"Payment Guarantee Letter","template_no":"03","language":"EN","doc_type":"GENERATED","required":false},
+  {"step_no":5,"sub_no":2,"doc_code":"SPA-ADD-01","title":"SPA Addendum-01","template_no":"07","language":"EN","doc_type":"GENERATED","required":false,"locked_text":true},
+  {"step_no":5,"sub_no":3,"doc_code":"SPA-ADD-02","title":"SPA Addendum-02","template_no":"08","language":"EN","doc_type":"GENERATED","required":false,"locked_text":true},
+  {"step_no":5,"sub_no":4,"doc_code":"BCL","title":"Bank Comfort Letter","template_no":"02","language":"EN","doc_type":"GENERATED","required":false},
+  {"step_no":5,"sub_no":5,"doc_code":"PAY-GUAR","title":"Payment Guarantee Letter","template_no":"03","language":"EN","doc_type":"GENERATED","required":false},
 
   {"step_no":6,"sub_no":1,"doc_code":"72H-COVER","title":"72h Shipping Documents Cover Sheet","template_no":"16","language":"EN","doc_type":"GENERATED","required":true},
   {"step_no":6,"sub_no":2,"doc_code":"PROFORMA","title":"Proforma Invoice (Upload/Template)","template_no":null,"language":"EN","doc_type":"UPLOAD_SLOT","required":true},
