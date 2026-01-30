@@ -281,20 +281,26 @@
                                         <label class="field-inline">
                                             <span class="text-secondary">KYC Rolle</span>
                                             <select id="kyc-role-select">
-                                                <option value="Buyer">Buyer</option>
                                                 <option value="Seller">Seller</option>
                                                 <option value="Producer">Producer</option>
+                                                <option value="Buyer">Buyer</option>
                                             </select>
                                         </label>
-                                        <span id="kyc-upload-status" class="text-secondary"></span>
+                                        <span id="kyc-pdf-status" class="text-secondary"></span>
                                         <span id="kyc-status" class="text-secondary"></span>
-                                        <button id="kyc-cleanup-btn" class="btn btn-sm btn-secondary">
+                                        <button id="kyc-print-btn" class="btn btn-sm btn-secondary" type="button">
+                                            <i class="ti ti-printer"></i> Drucken / PDF
+                                        </button>
+                                        <button id="kyc-back-to-generator-btn" class="btn btn-sm btn-secondary" type="button">
+                                            <i class="ti ti-arrow-left"></i> Zurück zu Generator
+                                        </button>
+                                        <button id="kyc-cleanup-btn" class="btn btn-sm btn-secondary" type="button">
                                             <i class="ti ti-broom"></i> KYC-PDFs aufräumen
                                         </button>
-                                        <button id="kyc-create-contacts-btn" class="btn btn-sm btn-secondary">
+                                        <button id="kyc-create-contacts-btn" class="btn btn-sm btn-secondary" type="button">
                                             <i class="ti ti-address-book"></i> Kontakte aus KYC erstellen
                                         </button>
-                                        <button id="kyc-save-btn" class="btn btn-sm btn-primary">
+                                        <button id="kyc-save-btn" class="btn btn-sm btn-primary" type="button">
                                             <i class="ti ti-device-floppy"></i> Speichern
                                         </button>
                                     </div>
@@ -307,11 +313,23 @@
                                     </div>
                                     <div class="kyc-upload-actions">
                                         <input type="file" id="kyc-signed-file" accept=".pdf,application/pdf">
-                                        <button id="kyc-upload-btn" class="btn btn-sm btn-secondary">
+                                        <button id="kyc-upload-btn" class="btn btn-sm btn-secondary" type="button">
                                             <i class="ti ti-upload"></i> PDF hochladen
                                         </button>
                                     </div>
                                     <div id="kyc-upload-list" class="kyc-upload-list"></div>
+                                    <div id="kyc-pdf-panel" class="kyc-upload-panel" style="display: none;">
+                                        <div class="kyc-upload-header" style="margin-top: 0.75rem;">
+                                            <h4>Alle KYC-PDFs</h4>
+                                            <div class="kyc-upload-header-actions">
+                                                <span class="text-secondary">Zum Verschieben zwischen Rollen</span>
+                                                <button id="kyc-pdf-close-btn" class="btn btn-sm btn-secondary" type="button">
+                                                    <i class="ti ti-x"></i> Schließen
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div id="kyc-pdf-list" class="kyc-upload-list"></div>
+                                    </div>
                                 </div>
                                 <form id="kyc-form" autocomplete="off" data-form-type="other" data-lpignore="true">
                                     <div class="kyc-section">
@@ -427,7 +445,7 @@
                                             </div>
                                             <div class="form-group">
                                                 <label for="kyc-subsidiaries">Subsidiaries</label>
-                                                <input type="text" id="kyc-subsidiaries">
+                                                <textarea id="kyc-subsidiaries" class="kyc-textarea" placeholder="Eine Zeile pro Tochtergesellschaft"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -581,6 +599,7 @@
                                         <div class="form-group">
                                             <label for="kyc-bank-contacts">Bank Contact People</label>
                                             <textarea id="kyc-bank-contacts" class="kyc-textarea" placeholder="Function | Name | Direct Phone | Email (eine Zeile pro Kontakt)"></textarea>
+                                            <div id="kyc-bank-officer2-hint" class="text-secondary" style="margin-top:6px; font-size:0.8rem;">Bank Officer 2 leer</div>
                                             <div class="form-hint">Format: Funktion | Name | Telefon | E-Mail</div>
                                         </div>
                                         <div class="form-group">

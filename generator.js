@@ -394,11 +394,15 @@ function renderCatalogItem(item, stepNo) {
     const meta = `${escapeHtml(item.doc_code)} · S${stepNo}.${item.default_sub_no}`;
     const typeLabel = getDocTypeLabel(item.doc_type);
     const actions = renderCatalogActions(item);
+    const kycStatus = item.doc_code === 'KYC-CIS'
+        ? `<div class="template-meta kyc-status" data-kyc-status>KYC: <span class="status-muted">S</span> / <span class="status-muted">P</span> / <span class="status-muted">B</span></div>`
+        : '';
     return `
         <div class="generator-template-btn" data-template="${item.template_no || ''}">
             <div class="template-title">${escapeHtml(item.template_name)}</div>
             <div class="template-meta">${meta}</div>
             <div class="template-meta">${typeLabel}</div>
+            ${kycStatus}
             <div class="template-actions">${actions}</div>
         </div>
     `;
@@ -603,6 +607,10 @@ export async function openGeneratorHub() {
     setupCatalogActions();
     await Promise.all([loadDeals(), loadContacts()]);
     bindDealSelect();
+    const selectedDealId = getSelectedDealId();
+    if (selectedDealId) {
+        await updateKycStatusBadge(selectedDealId);
+    }
     modal.classList.add('active');
 }
 
@@ -643,6 +651,11 @@ function setupCatalogActions() {
                 alert('Geschäft konnte nicht geladen werden.');
                 return;
             }
+            const docCode = generateBtn.dataset.doc || '';
+            if (docCode === 'KYC-CIS' || docCode === 'KYC_CIS') {
+                window.dispatchEvent(new CustomEvent('generator:kyc', { detail: { dealId } }));
+                return;
+            }
             const docType = normalizeDocType(generateBtn.dataset.docType);
             if (docType === 'SOURCE_UPLOADED') {
                 try {
@@ -662,8 +675,8 @@ function setupCatalogActions() {
                 return;
             }
             const selectedLanguage = getSelectedLanguage();
-            const docCode = generateBtn.dataset.doc;
-            const templateResult = getTemplateForLanguage(docCode, selectedLanguage);
+            const templateDocCode = generateBtn.dataset.doc;
+            const templateResult = getTemplateForLanguage(templateDocCode, selectedLanguage);
             const note = document.getElementById('generator-language-note');
             if (templateResult?.fallback && note) {
                 note.textContent = 'Template fehlt in der gewählten Sprache. Fallback auf EN.';
@@ -676,13 +689,13 @@ function setupCatalogActions() {
             }
             const contacts = await resolveContactsForDocument(dealId);
             const contactNames = contacts.map(contact => contact.full_name || contact.company || '').filter(Boolean);
-            const placeholderValues = buildPlaceholderMap(docCode, contacts);
+            const placeholderValues = buildPlaceholderMap(templateDocCode, contacts);
             let filledBody = applyTemplate(templateResult.template.body_md, placeholderValues);
             if (!templateResult.template.locked_text) {
                 filledBody = addContactsSectionIfMissing(filledBody, contactNames, selectedLanguage);
             }
             const dealNo = window.currentDeal?.deal_no || 'deal';
-            const filename = `${sanitizeFilename(dealNo)}_${sanitizeFilename(docCode)}_${selectedLanguage}.pdf`;
+            const filename = `${sanitizeFilename(dealNo)}_${sanitizeFilename(templateDocCode)}_${selectedLanguage}.pdf`;
             openPdfPreview(filledBody, filename, contactNames);
         }
     });
@@ -698,7 +711,33 @@ function bindDealSelect() {
             return;
         }
         await ensureDealContext(dealId);
+        await updateKycStatusBadge(dealId);
     });
+}
+
+async function updateKycStatusBadge(dealId) {
+    const statusEl = document.querySelector('[data-kyc-status]');
+    if (!statusEl || !supabase || !dealId) return;
+    const { data, error } = await supabase
+        .from('documents')
+        .select('doc_type')
+        .eq('deal_id', dealId)
+        .like('doc_type', 'KYC_SIGNED_%');
+    if (error) {
+        statusEl.innerHTML = `KYC: <span class="status-error">S</span> / <span class="status-error">P</span> / <span class="status-error">B</span>`;
+        return;
+    }
+    const roles = { S: 0, P: 0, B: 0 };
+    (data || []).forEach(doc => {
+        const roleKey = (doc.doc_type || '').replace('KYC_SIGNED_', '');
+        if (roleKey === 'SELLER') roles.S += 1;
+        if (roleKey === 'PRODUCER') roles.P += 1;
+        if (roleKey === 'BUYER') roles.B += 1;
+    });
+    const sClass = roles.S > 0 ? 'status-success' : 'status-error';
+    const pClass = roles.P > 0 ? 'status-success' : 'status-error';
+    const bClass = roles.B > 0 ? 'status-success' : 'status-error';
+    statusEl.innerHTML = `KYC: <span class="${sClass}">S</span> / <span class="${pClass}">P</span> / <span class="${bClass}">B</span>`;
 }
 
 function getSelectedLanguage() {
