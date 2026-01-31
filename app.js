@@ -1793,19 +1793,20 @@ function formatPercentValue(value) {
     return number.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function formatUsdValue(value) {
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+function formatEurValue(value) {
+    return new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 }
 
-function getUsdPerKg() {
+function getEurPerKg() {
     if (!lastLbmaQuote || !Number.isFinite(Number(lastLbmaQuote.usd))) return null;
-    return Number(lastLbmaQuote.usd) * 32.1507466;
+    if (!lastFxRate || !Number.isFinite(Number(lastFxRate.rate))) return null;
+    return Number(lastLbmaQuote.usd) * 32.1507466 * Number(lastFxRate.rate);
 }
 
-function formatAllocationUsdValue(goldAmountKg, usdPerKg, percent) {
-    if (!usdPerKg) return '—';
-    const amount = (Number(goldAmountKg) || 0) * usdPerKg * (Number(percent) || 0) / 100;
-    return `$ ${formatUsdValue(amount)}`;
+function formatAllocationEurValue(goldAmountKg, eurPerKg, percent) {
+    if (!eurPerKg) return '—';
+    const amount = (Number(goldAmountKg) || 0) * eurPerKg * (Number(percent) || 0) / 100;
+    return `€ ${formatEurValue(amount)}`;
 }
 
 function formatAmountValue(value) {
@@ -1916,7 +1917,7 @@ function renderDiscountAllocationSections() {
     const activeContainer = document.getElementById('dpt-active-allocations');
     const placeholderContainer = document.getElementById('dpt-placeholder-allocations');
     if (!activeContainer || !placeholderContainer || !discountParticipationDraft) return;
-    const usdPerKg = getUsdPerKg();
+    const eurPerKg = getEurPerKg();
     const goldAmountKg = Number(discountParticipationDraft.goldAmountKg) || 0;
 
     const groups = [
@@ -1939,7 +1940,7 @@ function renderDiscountAllocationSections() {
                 <td class="dpt-percent-cell">
                     <input type="number" class="dpt-percent" data-group="${group.key}" data-id="${item.id}" min="0" max="100" step="0.01" value="${Number(item.percent || 0).toFixed(2)}" ${item.enabled ? '' : 'disabled'}>
                 </td>
-                <td class="dpt-usd-cell">${formatAllocationUsdValue(goldAmountKg, usdPerKg, Number(item.percent || 0))}</td>
+                <td class="dpt-usd-cell">${formatAllocationEurValue(goldAmountKg, eurPerKg, Number(item.percent || 0))}</td>
             </tr>
         `).join('');
         return `
@@ -1951,7 +1952,7 @@ function renderDiscountAllocationSections() {
                             <th class="dpt-checkbox-cell">Aktiv</th>
                             <th>Position</th>
                             <th>%</th>
-                            <th>USD Anteil</th>
+                            <th>EUR Anteil</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>

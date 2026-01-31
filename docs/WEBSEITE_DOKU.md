@@ -78,6 +78,34 @@ Ein Deal ist die zentrale Einheit. In der Detailansicht gibt es mehrere Tabs:
 4. Generator & Exports öffnen, Dokumente erstellen/Download/Upload.
 5. Kontakte prüfen, Bankdaten übernehmen.
 
+---
+
+## Ablaufschema Südafrika SmartRec (Doré Bars) – Terminierung (Arbeitstage)
+Annahmen: **Arbeitstage (Mo–Fr)**, **keine Zeitzonen‑Tage**, **keine Fix‑Slots**.  
+Terminlogik: **Plan‑Datum** wird vorwärts aus Startdatum + Dauer berechnet; bei **Ist‑Datum** wird ab diesem Schritt neu geplant.
+
+| Nr | Schritt | Verantwortlich | Dauer (AT) | Puffer (AT) | Plan Start | Plan Ende | Ist Start | Ist Ende | Hinweise |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Kontaktanbahnung Seller/Intermediaries | Koras | 3 | 0 |  |  |  |  | Erstkontakt, Bedarf, Verhandlung |
+| 2 | Buyer‑Placement | Koras | 3 | 0 |  |  |  |  | Buyer identifizieren, LOI |
+| 3 | KYC/AML/Sanktions‑/Embargoprüfung | Koras | 5 | 1 |  |  |  |  | Due Diligence, Screening |
+| 4 | Chain‑of‑Custody Dokumentation | Koras | 3 | 0 |  |  |  |  | Herkunft/CoC‑Nachweise |
+| 5 | SPA‑Erstellung/Signatur | Koras | 5 | 0 |  |  |  |  | **Drittbegünstigter** optional; falls vorhanden: Compliance‑Prüfung + Aufnahme in SPA |
+| 6 | Re‑Identifizierung (nur Hallmark >5 Jahre) | Assay | 3 | 0 |  |  |  |  | Für Doré i. d. R. nicht relevant |
+| 7 | Vorab‑Dokumente 72h vor Versand | Seller | 2 | 0 |  |  |  |  | 72h‑Frist überwachen |
+| 8 | Lufttransport (versichert, Zollversiegelung) | Seller (bis FRA) / Koras (ab FRA) | 3 | 1 |  |  |  |  | Auslandslieferung per Luftfracht; **AWB** dokumentiert Flugdaten. Transportplanung bis FRA **durch Seller**, ab FRA **durch Koras** |
+| 9 | Zollbereich Frankfurt/Main: Vorprüfung | Koras | 3 | 1 |  |  |  |  | Zoll‑Precheck nach Ankunft FRA |
+| 10 | Sicherheitslogistik | Koras | 1 | 0 |  |  |  |  | Übergabe/Chain‑of‑Custody |
+| 11 | Ankunft Pforzheim: Annahmebestätigung | Koras | 1 | 0 |  |  |  |  | Receiving/Acceptance |
+| 12 | Fire Assay + optional Second Assay | Assay | 5 | 1 |  |  |  |  | Optional Second Assay |
+| 13 | Verbindlicher Assay Report | Assay | 3 | 0 |  |  |  |  | Final Report |
+| 14 | Preisfestlegung (LBMA Fixing Bezug) | Koras | 1 | 0 |  |  |  |  | Price Fixing |
+| 15 | Zahlung innerhalb vertraglicher Frist | Koras / Bank | 2 | 1 |  |  |  |  | Bankinstrumente durch Koras: **SBLC/DLC/Block Funds/Bankgarantie** |
+| 16 | Ownership Transfer | Koras | 1 | 0 |  |  |  |  | Eigentumsübergang |
+| 17 | Raffination zu 999,9 | Refinery | 7 | 1 |  |  |  |  | Refining |
+| 18 | Lagerung/Abholung Buyer | Koras | 3 | 0 |  |  |  |  | Storage/Release |
+| 19 | Abschlussdokumentation | Koras | 1 | 0 |  |  |  |  | Closing Dossier |
+
 ## Hinweis für Präsentation
 - Kernnutzen: **Prozesssicherheit, Dokumentenkonsistenz, KYC‑Compliance, zentrale Datenhaltung**.
 - Alles ist Deal‑zentriert, Rollenbasiert (Buyer/Seller/Producer).

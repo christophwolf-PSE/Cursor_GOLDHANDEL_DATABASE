@@ -1,0 +1,29 @@
+{
+  "name": "cursor_goldhandel_database",
+  "version": "1.0.0",
+  "description": "Eine moderne, responsive Web-App zur Verwaltung des vollständigen Prozesses des Goldankaufs (Doré Gold Bars oder gestempeltes Tafelgold/Hallmark) aus afrikanischen Ländern bis zur Raffination auf 999,9, Zahlung und Abholung in Pforzheim, Deutschland.",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/christophwolf-PSE/Cursor_GOLDHANDEL_DATABASE.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/christophwolf-PSE/Cursor_GOLDHANDEL_DATABASE/issues"
+  },
+  "homepage": "https://github.com/christophwolf-PSE/Cursor_GOLDHANDEL_DATABASE#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "pg": "^8.18.0"
+  },
+  "devDependencies": {}
+}

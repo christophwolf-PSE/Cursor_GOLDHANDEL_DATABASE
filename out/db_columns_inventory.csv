@@ -1,0 +1,643 @@
+table_schema,table_name,column_name,data_type,is_nullable
+auth,audit_log_entries,instance_id,uuid,YES
+auth,audit_log_entries,id,uuid,NO
+auth,audit_log_entries,payload,json,YES
+auth,audit_log_entries,created_at,timestamp with time zone,YES
+auth,audit_log_entries,ip_address,character varying,NO
+auth,flow_state,id,uuid,NO
+auth,flow_state,user_id,uuid,YES
+auth,flow_state,auth_code,text,NO
+auth,flow_state,code_challenge_method,USER-DEFINED,NO
+auth,flow_state,code_challenge,text,NO
+auth,flow_state,provider_type,text,NO
+auth,flow_state,provider_access_token,text,YES
+auth,flow_state,provider_refresh_token,text,YES
+auth,flow_state,created_at,timestamp with time zone,YES
+auth,flow_state,updated_at,timestamp with time zone,YES
+auth,flow_state,authentication_method,text,NO
+auth,flow_state,auth_code_issued_at,timestamp with time zone,YES
+auth,identities,provider_id,text,NO
+auth,identities,user_id,uuid,NO
+auth,identities,identity_data,jsonb,NO
+auth,identities,provider,text,NO
+auth,identities,last_sign_in_at,timestamp with time zone,YES
+auth,identities,created_at,timestamp with time zone,YES
+auth,identities,updated_at,timestamp with time zone,YES
+auth,identities,email,text,YES
+auth,identities,id,uuid,NO
+auth,instances,id,uuid,NO
+auth,instances,uuid,uuid,YES
+auth,instances,raw_base_config,text,YES
+auth,instances,created_at,timestamp with time zone,YES
+auth,instances,updated_at,timestamp with time zone,YES
+auth,mfa_amr_claims,session_id,uuid,NO
+auth,mfa_amr_claims,created_at,timestamp with time zone,NO
+auth,mfa_amr_claims,updated_at,timestamp with time zone,NO
+auth,mfa_amr_claims,authentication_method,text,NO
+auth,mfa_amr_claims,id,uuid,NO
+auth,mfa_challenges,id,uuid,NO
+auth,mfa_challenges,factor_id,uuid,NO
+auth,mfa_challenges,created_at,timestamp with time zone,NO
+auth,mfa_challenges,verified_at,timestamp with time zone,YES
+auth,mfa_challenges,ip_address,inet,NO
+auth,mfa_challenges,otp_code,text,YES
+auth,mfa_challenges,web_authn_session_data,jsonb,YES
+auth,mfa_factors,id,uuid,NO
+auth,mfa_factors,user_id,uuid,NO
+auth,mfa_factors,friendly_name,text,YES
+auth,mfa_factors,factor_type,USER-DEFINED,NO
+auth,mfa_factors,status,USER-DEFINED,NO
+auth,mfa_factors,created_at,timestamp with time zone,NO
+auth,mfa_factors,updated_at,timestamp with time zone,NO
+auth,mfa_factors,secret,text,YES
+auth,mfa_factors,phone,text,YES
+auth,mfa_factors,last_challenged_at,timestamp with time zone,YES
+auth,mfa_factors,web_authn_credential,jsonb,YES
+auth,mfa_factors,web_authn_aaguid,uuid,YES
+auth,mfa_factors,last_webauthn_challenge_data,jsonb,YES
+auth,oauth_authorizations,id,uuid,NO
+auth,oauth_authorizations,authorization_id,text,NO
+auth,oauth_authorizations,client_id,uuid,NO
+auth,oauth_authorizations,user_id,uuid,YES
+auth,oauth_authorizations,redirect_uri,text,NO
+auth,oauth_authorizations,scope,text,NO
+auth,oauth_authorizations,state,text,YES
+auth,oauth_authorizations,resource,text,YES
+auth,oauth_authorizations,code_challenge,text,YES
+auth,oauth_authorizations,code_challenge_method,USER-DEFINED,YES
+auth,oauth_authorizations,response_type,USER-DEFINED,NO
+auth,oauth_authorizations,status,USER-DEFINED,NO
+auth,oauth_authorizations,authorization_code,text,YES
+auth,oauth_authorizations,created_at,timestamp with time zone,NO
+auth,oauth_authorizations,expires_at,timestamp with time zone,NO
+auth,oauth_authorizations,approved_at,timestamp with time zone,YES
+auth,oauth_authorizations,nonce,text,YES
+auth,oauth_client_states,id,uuid,NO
+auth,oauth_client_states,provider_type,text,NO
+auth,oauth_client_states,code_verifier,text,YES
+auth,oauth_client_states,created_at,timestamp with time zone,NO
+auth,oauth_clients,id,uuid,NO
+auth,oauth_clients,client_secret_hash,text,YES
+auth,oauth_clients,registration_type,USER-DEFINED,NO
+auth,oauth_clients,redirect_uris,text,NO
+auth,oauth_clients,grant_types,text,NO
+auth,oauth_clients,client_name,text,YES
+auth,oauth_clients,client_uri,text,YES
+auth,oauth_clients,logo_uri,text,YES
+auth,oauth_clients,created_at,timestamp with time zone,NO
+auth,oauth_clients,updated_at,timestamp with time zone,NO
+auth,oauth_clients,deleted_at,timestamp with time zone,YES
+auth,oauth_clients,client_type,USER-DEFINED,NO
+auth,oauth_consents,id,uuid,NO
+auth,oauth_consents,user_id,uuid,NO
+auth,oauth_consents,client_id,uuid,NO
+auth,oauth_consents,scopes,text,NO
+auth,oauth_consents,granted_at,timestamp with time zone,NO
+auth,oauth_consents,revoked_at,timestamp with time zone,YES
+auth,one_time_tokens,id,uuid,NO
+auth,one_time_tokens,user_id,uuid,NO
+auth,one_time_tokens,token_type,USER-DEFINED,NO
+auth,one_time_tokens,token_hash,text,NO
+auth,one_time_tokens,relates_to,text,NO
+auth,one_time_tokens,created_at,timestamp without time zone,NO
+auth,one_time_tokens,updated_at,timestamp without time zone,NO
+auth,refresh_tokens,instance_id,uuid,YES
+auth,refresh_tokens,id,bigint,NO
+auth,refresh_tokens,token,character varying,YES
+auth,refresh_tokens,user_id,character varying,YES
+auth,refresh_tokens,revoked,boolean,YES
+auth,refresh_tokens,created_at,timestamp with time zone,YES
+auth,refresh_tokens,updated_at,timestamp with time zone,YES
+auth,refresh_tokens,parent,character varying,YES
+auth,refresh_tokens,session_id,uuid,YES
+auth,saml_providers,id,uuid,NO
+auth,saml_providers,sso_provider_id,uuid,NO
+auth,saml_providers,entity_id,text,NO
+auth,saml_providers,metadata_xml,text,NO
+auth,saml_providers,metadata_url,text,YES
+auth,saml_providers,attribute_mapping,jsonb,YES
+auth,saml_providers,created_at,timestamp with time zone,YES
+auth,saml_providers,updated_at,timestamp with time zone,YES
+auth,saml_providers,name_id_format,text,YES
+auth,saml_relay_states,id,uuid,NO
+auth,saml_relay_states,sso_provider_id,uuid,NO
+auth,saml_relay_states,request_id,text,NO
+auth,saml_relay_states,for_email,text,YES
+auth,saml_relay_states,redirect_to,text,YES
+auth,saml_relay_states,created_at,timestamp with time zone,YES
+auth,saml_relay_states,updated_at,timestamp with time zone,YES
+auth,saml_relay_states,flow_state_id,uuid,YES
+auth,schema_migrations,version,character varying,NO
+auth,sessions,id,uuid,NO
+auth,sessions,user_id,uuid,NO
+auth,sessions,created_at,timestamp with time zone,YES
+auth,sessions,updated_at,timestamp with time zone,YES
+auth,sessions,factor_id,uuid,YES
+auth,sessions,aal,USER-DEFINED,YES
+auth,sessions,not_after,timestamp with time zone,YES
+auth,sessions,refreshed_at,timestamp without time zone,YES
+auth,sessions,user_agent,text,YES
+auth,sessions,ip,inet,YES
+auth,sessions,tag,text,YES
+auth,sessions,oauth_client_id,uuid,YES
+auth,sessions,refresh_token_hmac_key,text,YES
+auth,sessions,refresh_token_counter,bigint,YES
+auth,sessions,scopes,text,YES
+auth,sso_domains,id,uuid,NO
+auth,sso_domains,sso_provider_id,uuid,NO
+auth,sso_domains,domain,text,NO
+auth,sso_domains,created_at,timestamp with time zone,YES
+auth,sso_domains,updated_at,timestamp with time zone,YES
+auth,sso_providers,id,uuid,NO
+auth,sso_providers,resource_id,text,YES
+auth,sso_providers,created_at,timestamp with time zone,YES
+auth,sso_providers,updated_at,timestamp with time zone,YES
+auth,sso_providers,disabled,boolean,YES
+auth,users,instance_id,uuid,YES
+auth,users,id,uuid,NO
+auth,users,aud,character varying,YES
+auth,users,role,character varying,YES
+auth,users,email,character varying,YES
+auth,users,encrypted_password,character varying,YES
+auth,users,email_confirmed_at,timestamp with time zone,YES
+auth,users,invited_at,timestamp with time zone,YES
+auth,users,confirmation_token,character varying,YES
+auth,users,confirmation_sent_at,timestamp with time zone,YES
+auth,users,recovery_token,character varying,YES
+auth,users,recovery_sent_at,timestamp with time zone,YES
+auth,users,email_change_token_new,character varying,YES
+auth,users,email_change,character varying,YES
+auth,users,email_change_sent_at,timestamp with time zone,YES
+auth,users,last_sign_in_at,timestamp with time zone,YES
+auth,users,raw_app_meta_data,jsonb,YES
+auth,users,raw_user_meta_data,jsonb,YES
+auth,users,is_super_admin,boolean,YES
+auth,users,created_at,timestamp with time zone,YES
+auth,users,updated_at,timestamp with time zone,YES
+auth,users,phone,text,YES
+auth,users,phone_confirmed_at,timestamp with time zone,YES
+auth,users,phone_change,text,YES
+auth,users,phone_change_token,character varying,YES
+auth,users,phone_change_sent_at,timestamp with time zone,YES
+auth,users,confirmed_at,timestamp with time zone,YES
+auth,users,email_change_token_current,character varying,YES
+auth,users,email_change_confirm_status,smallint,YES
+auth,users,banned_until,timestamp with time zone,YES
+auth,users,reauthentication_token,character varying,YES
+auth,users,reauthentication_sent_at,timestamp with time zone,YES
+auth,users,is_sso_user,boolean,NO
+auth,users,deleted_at,timestamp with time zone,YES
+auth,users,is_anonymous,boolean,NO
+extensions,pg_stat_statements,userid,oid,YES
+extensions,pg_stat_statements,dbid,oid,YES
+extensions,pg_stat_statements,toplevel,boolean,YES
+extensions,pg_stat_statements,queryid,bigint,YES
+extensions,pg_stat_statements,query,text,YES
+extensions,pg_stat_statements,plans,bigint,YES
+extensions,pg_stat_statements,total_plan_time,double precision,YES
+extensions,pg_stat_statements,min_plan_time,double precision,YES
+extensions,pg_stat_statements,max_plan_time,double precision,YES
+extensions,pg_stat_statements,mean_plan_time,double precision,YES
+extensions,pg_stat_statements,stddev_plan_time,double precision,YES
+extensions,pg_stat_statements,calls,bigint,YES
+extensions,pg_stat_statements,total_exec_time,double precision,YES
+extensions,pg_stat_statements,min_exec_time,double precision,YES
+extensions,pg_stat_statements,max_exec_time,double precision,YES
+extensions,pg_stat_statements,mean_exec_time,double precision,YES
+extensions,pg_stat_statements,stddev_exec_time,double precision,YES
+extensions,pg_stat_statements,rows,bigint,YES
+extensions,pg_stat_statements,shared_blks_hit,bigint,YES
+extensions,pg_stat_statements,shared_blks_read,bigint,YES
+extensions,pg_stat_statements,shared_blks_dirtied,bigint,YES
+extensions,pg_stat_statements,shared_blks_written,bigint,YES
+extensions,pg_stat_statements,local_blks_hit,bigint,YES
+extensions,pg_stat_statements,local_blks_read,bigint,YES
+extensions,pg_stat_statements,local_blks_dirtied,bigint,YES
+extensions,pg_stat_statements,local_blks_written,bigint,YES
+extensions,pg_stat_statements,temp_blks_read,bigint,YES
+extensions,pg_stat_statements,temp_blks_written,bigint,YES
+extensions,pg_stat_statements,shared_blk_read_time,double precision,YES
+extensions,pg_stat_statements,shared_blk_write_time,double precision,YES
+extensions,pg_stat_statements,local_blk_read_time,double precision,YES
+extensions,pg_stat_statements,local_blk_write_time,double precision,YES
+extensions,pg_stat_statements,temp_blk_read_time,double precision,YES
+extensions,pg_stat_statements,temp_blk_write_time,double precision,YES
+extensions,pg_stat_statements,wal_records,bigint,YES
+extensions,pg_stat_statements,wal_fpi,bigint,YES
+extensions,pg_stat_statements,wal_bytes,numeric,YES
+extensions,pg_stat_statements,jit_functions,bigint,YES
+extensions,pg_stat_statements,jit_generation_time,double precision,YES
+extensions,pg_stat_statements,jit_inlining_count,bigint,YES
+extensions,pg_stat_statements,jit_inlining_time,double precision,YES
+extensions,pg_stat_statements,jit_optimization_count,bigint,YES
+extensions,pg_stat_statements,jit_optimization_time,double precision,YES
+extensions,pg_stat_statements,jit_emission_count,bigint,YES
+extensions,pg_stat_statements,jit_emission_time,double precision,YES
+extensions,pg_stat_statements,jit_deform_count,bigint,YES
+extensions,pg_stat_statements,jit_deform_time,double precision,YES
+extensions,pg_stat_statements,stats_since,timestamp with time zone,YES
+extensions,pg_stat_statements,minmax_stats_since,timestamp with time zone,YES
+extensions,pg_stat_statements_info,dealloc,bigint,YES
+extensions,pg_stat_statements_info,stats_reset,timestamp with time zone,YES
+public,access_requests,id,uuid,NO
+public,access_requests,full_name,text,NO
+public,access_requests,email,text,NO
+public,access_requests,company,text,YES
+public,access_requests,note,text,YES
+public,access_requests,status,text,NO
+public,access_requests,approved_by,text,YES
+public,access_requests,approved_at,timestamp with time zone,YES
+public,access_requests,rejected_at,timestamp with time zone,YES
+public,access_requests,created_at,timestamp with time zone,YES
+public,audit_log,id,uuid,NO
+public,audit_log,deal_id,uuid,YES
+public,audit_log,actor,uuid,YES
+public,audit_log,action,text,NO
+public,audit_log,entity,text,NO
+public,audit_log,entity_id,uuid,YES
+public,audit_log,before_json,jsonb,YES
+public,audit_log,after_json,jsonb,YES
+public,audit_log,created_at,timestamp with time zone,YES
+public,contacts,id,uuid,NO
+public,contacts,full_name,text,NO
+public,contacts,role,text,YES
+public,contacts,company,text,YES
+public,contacts,email,text,YES
+public,contacts,phone,text,YES
+public,contacts,mobile,text,YES
+public,contacts,notes,text,YES
+public,contacts,created_at,timestamp with time zone,YES
+public,contacts,updated_at,timestamp with time zone,YES
+public,deal_bank_accounts,id,uuid,NO
+public,deal_bank_accounts,deal_id,uuid,NO
+public,deal_bank_accounts,contact_id,uuid,NO
+public,deal_bank_accounts,bank_name,text,NO
+public,deal_bank_accounts,iban,text,YES
+public,deal_bank_accounts,bic,text,YES
+public,deal_bank_accounts,account_holder,text,YES
+public,deal_bank_accounts,created_at,timestamp with time zone,YES
+public,deal_contacts,id,uuid,NO
+public,deal_contacts,deal_id,uuid,NO
+public,deal_contacts,contact_id,uuid,NO
+public,deal_contacts,role,text,YES
+public,deal_contacts,notes,text,YES
+public,deal_contacts,created_at,timestamp with time zone,YES
+public,deal_steps,id,uuid,NO
+public,deal_steps,deal_id,uuid,NO
+public,deal_steps,step_no,integer,NO
+public,deal_steps,title,text,NO
+public,deal_steps,description,text,YES
+public,deal_steps,risk_notes,text,YES
+public,deal_steps,documents_required,boolean,YES
+public,deal_steps,documents_json,jsonb,YES
+public,deal_steps,responsible_role,text,NO
+public,deal_steps,status,text,NO
+public,deal_steps,due_date,date,YES
+public,deal_steps,done_at,timestamp with time zone,YES
+public,deal_steps,done_by,uuid,YES
+public,deal_steps,verified_at,timestamp with time zone,YES
+public,deal_steps,verified_by,uuid,YES
+public,deal_steps,verification_note,text,YES
+public,deal_steps,created_at,timestamp with time zone,YES
+public,deal_steps,updated_at,timestamp with time zone,YES
+public,deal_steps,block_reason,text,YES
+public,deals,id,uuid,NO
+public,deals,deal_no,text,NO
+public,deals,country,text,NO
+public,deals,route,text,YES
+public,deals,commodity_type,text,NO
+public,deals,hallmark_age_bucket,text,YES
+public,deals,status,text,NO
+public,deals,created_by,uuid,YES
+public,deals,created_at,timestamp with time zone,YES
+public,deals,updated_at,timestamp with time zone,YES
+public,deals,offer_terms,text,YES
+public,deals,lbma_discount_pct,integer,NO
+public,deals,discount_participation,jsonb,YES
+public,deals,quantity_kg,numeric,YES
+public,deals,price_fixing,text,YES
+public,deals,origin_country,text,YES
+public,deals,shipment_route,text,YES
+public,deals,commodity_form,text,YES
+public,deals,commodity_purity,text,YES
+public,deals,currency,text,YES
+public,deals,consignments,text,YES
+public,deals,seller_name,text,YES
+public,deals,buyer_name,text,YES
+public,deals,seller_address,text,YES
+public,deals,buyer_address,text,YES
+public,deals,signature_seller,text,YES
+public,deals,signature_buyer,text,YES
+public,deals,bank_name,text,YES
+public,deals,bank_iban,text,YES
+public,deals,bank_bic,text,YES
+public,deals,bank_account_holder,text,YES
+public,document_catalog,id,bigint,NO
+public,document_catalog,step_no,integer,NO
+public,document_catalog,sub_no,integer,NO
+public,document_catalog,doc_code,text,NO
+public,document_catalog,title,text,NO
+public,document_catalog,template_no,text,YES
+public,document_catalog,language,text,NO
+public,document_catalog,doc_type,text,NO
+public,document_catalog,required,boolean,NO
+public,document_catalog,locked_text,boolean,NO
+public,document_catalog,sort_key,integer,YES
+public,document_catalog,active,boolean,NO
+public,document_catalog,doc_kind,text,NO
+public,document_catalog,is_required,boolean,NO
+public,document_catalog,default_status,text,NO
+public,document_catalog,source_ref,text,YES
+public,document_catalog,ui_group,text,YES
+public,document_catalog,updated_at,timestamp with time zone,NO
+public,document_catalog,created_at,timestamp with time zone,NO
+public,document_templates,id,bigint,NO
+public,document_templates,doc_code,text,NO
+public,document_templates,language,text,NO
+public,document_templates,version,text,NO
+public,document_templates,body_md,text,NO
+public,document_templates,placeholders,jsonb,NO
+public,document_templates,locked_text,boolean,NO
+public,document_templates,updated_at,timestamp with time zone,NO
+public,documents,id,uuid,NO
+public,documents,deal_id,uuid,NO
+public,documents,step_id,uuid,YES
+public,documents,doc_type,text,NO
+public,documents,file_path,text,NO
+public,documents,file_name,text,NO
+public,documents,mime_type,text,YES
+public,documents,version,integer,YES
+public,documents,uploaded_by,uuid,YES
+public,documents,uploaded_at,timestamp with time zone,YES
+public,email_templates,id,bigint,NO
+public,email_templates,email_code,text,NO
+public,email_templates,language,text,NO
+public,email_templates,subject,text,NO
+public,email_templates,body_md,text,NO
+public,email_templates,placeholders,jsonb,NO
+public,email_templates,is_active,boolean,NO
+public,email_templates,updated_at,timestamp with time zone,NO
+public,email_templates,version,integer,NO
+public,kyc_bank_contacts,id,uuid,NO
+public,kyc_bank_contacts,kyc_profile_id,uuid,YES
+public,kyc_bank_contacts,deal_id,uuid,YES
+public,kyc_bank_contacts,deal_no,text,YES
+public,kyc_bank_contacts,function,text,YES
+public,kyc_bank_contacts,name,text,YES
+public,kyc_bank_contacts,direct_phone,text,YES
+public,kyc_bank_contacts,email,text,YES
+public,kyc_bank_contacts,created_at,timestamp with time zone,YES
+public,kyc_bank_contacts,updated_at,timestamp with time zone,YES
+public,kyc_bank_details,id,uuid,NO
+public,kyc_bank_details,kyc_profile_id,uuid,YES
+public,kyc_bank_details,deal_id,uuid,YES
+public,kyc_bank_details,deal_no,text,YES
+public,kyc_bank_details,bank_name,text,YES
+public,kyc_bank_details,bank_street,text,YES
+public,kyc_bank_details,bank_postal_code,text,YES
+public,kyc_bank_details,bank_city,text,YES
+public,kyc_bank_details,bank_country,text,YES
+public,kyc_bank_details,bank_phone,text,YES
+public,kyc_bank_details,bank_officer_name,text,YES
+public,kyc_bank_details,bank_officer_direct_phone,text,YES
+public,kyc_bank_details,bank_officer_email,text,YES
+public,kyc_bank_details,account_name,text,YES
+public,kyc_bank_details,account_number,text,YES
+public,kyc_bank_details,swift_bic,text,YES
+public,kyc_bank_details,account_signatory,text,YES
+public,kyc_bank_details,reference_letter_appendix,boolean,YES
+public,kyc_bank_details,created_at,timestamp with time zone,YES
+public,kyc_bank_details,updated_at,timestamp with time zone,YES
+public,kyc_profiles,id,uuid,NO
+public,kyc_profiles,deal_id,uuid,YES
+public,kyc_profiles,deal_no,text,YES
+public,kyc_profiles,contact_id,uuid,YES
+public,kyc_profiles,contact_name,text,YES
+public,kyc_profiles,company_name,text,YES
+public,kyc_profiles,authorized_signatory_name,text,YES
+public,kyc_profiles,authorized_signatory_title,text,YES
+public,kyc_profiles,authorized_signatory_passport_no,text,YES
+public,kyc_profiles,company_street,text,YES
+public,kyc_profiles,company_postal_code,text,YES
+public,kyc_profiles,company_city,text,YES
+public,kyc_profiles,company_country,text,YES
+public,kyc_profiles,company_phone,text,YES
+public,kyc_profiles,company_email,text,YES
+public,kyc_profiles,company_website,text,YES
+public,kyc_profiles,company_tax_id,text,YES
+public,kyc_profiles,company_vat_id,text,YES
+public,kyc_profiles,role_buyer,boolean,YES
+public,kyc_profiles,role_seller,boolean,YES
+public,kyc_profiles,role_producer,boolean,YES
+public,kyc_profiles,product_raw_material,boolean,YES
+public,kyc_profiles,product_refined_bars,boolean,YES
+public,kyc_profiles,product_machinery,boolean,YES
+public,kyc_profiles,type_of_business,text,YES
+public,kyc_profiles,incorporation_date,date,YES
+public,kyc_profiles,shareholder_owner,text,YES
+public,kyc_profiles,total_employees,integer,YES
+public,kyc_profiles,subsidiaries,text,YES
+public,kyc_profiles,primary_contact_first_name,text,YES
+public,kyc_profiles,primary_contact_last_name,text,YES
+public,kyc_profiles,primary_contact_function,text,YES
+public,kyc_profiles,primary_contact_phone,text,YES
+public,kyc_profiles,primary_contact_email,text,YES
+public,kyc_profiles,legal_counsel_name,text,YES
+public,kyc_profiles,legal_counsel_street,text,YES
+public,kyc_profiles,legal_counsel_postal_code,text,YES
+public,kyc_profiles,legal_counsel_city,text,YES
+public,kyc_profiles,legal_counsel_country,text,YES
+public,kyc_profiles,legal_counsel_phone,text,YES
+public,kyc_profiles,legal_counsel_email,text,YES
+public,kyc_profiles,legal_counsel_website,text,YES
+public,kyc_profiles,cif_basis,boolean,YES
+public,kyc_profiles,fixtures_last_three,text,YES
+public,kyc_profiles,created_at,timestamp with time zone,YES
+public,kyc_profiles,updated_at,timestamp with time zone,YES
+public,kyc_profiles,account_name,text,YES
+public,kyc_profiles,passport_no,text,YES
+public,kyc_profiles,street,text,YES
+public,kyc_profiles,city,text,YES
+public,kyc_profiles,postal_code,text,YES
+public,kyc_profiles,country,text,YES
+public,kyc_profiles,phone,text,YES
+public,kyc_profiles,business_email,text,YES
+public,kyc_profiles,business_website,text,YES
+public,kyc_profiles,tax_id,text,YES
+public,kyc_profiles,vat_no,text,YES
+public,kyc_profiles,company_roles,jsonb,YES
+public,kyc_profiles,product_refinery_machinery,boolean,YES
+public,kyc_profiles,employees_count,integer,YES
+public,kyc_profiles,bank_name,text,YES
+public,kyc_profiles,bank_street,text,YES
+public,kyc_profiles,bank_postal_code,text,YES
+public,kyc_profiles,bank_city,text,YES
+public,kyc_profiles,bank_country,text,YES
+public,kyc_profiles,bank_phone,text,YES
+public,kyc_profiles,bank_officer,text,YES
+public,kyc_profiles,bank_officer_phone,text,YES
+public,kyc_profiles,bank_officer_email,text,YES
+public,kyc_profiles,account_number,text,YES
+public,kyc_profiles,iban,text,YES
+public,kyc_profiles,swift_bic,text,YES
+public,kyc_profiles,account_signatory,text,YES
+public,kyc_profiles,bank_contacts,jsonb,YES
+public,kyc_profiles,bank_reference_letter_appendix,boolean,YES
+public,kyc_profiles,products,jsonb,YES
+public,kyc_profiles,trade_references,jsonb,YES
+public,kyc_profiles,party_role,text,YES
+public,kyc_trade_references,id,uuid,NO
+public,kyc_trade_references,kyc_profile_id,uuid,YES
+public,kyc_trade_references,deal_id,uuid,YES
+public,kyc_trade_references,deal_no,text,YES
+public,kyc_trade_references,customer_name,text,YES
+public,kyc_trade_references,country,text,YES
+public,kyc_trade_references,created_at,timestamp with time zone,YES
+public,kyc_trade_references,updated_at,timestamp with time zone,YES
+public,parties,id,uuid,NO
+public,parties,deal_id,uuid,NO
+public,parties,role,text,NO
+public,parties,name,text,NO
+public,parties,company,text,YES
+public,parties,email,text,YES
+public,parties,phone,text,YES
+public,parties,notes,text,YES
+public,parties,created_at,timestamp with time zone,YES
+public,process_templates,id,uuid,NO
+public,process_templates,name,text,NO
+public,process_templates,version,text,YES
+public,process_templates,created_at,timestamp with time zone,YES
+public,risks,id,uuid,NO
+public,risks,deal_id,uuid,NO
+public,risks,step_id,uuid,YES
+public,risks,category,text,NO
+public,risks,description,text,NO
+public,risks,severity,integer,NO
+public,risks,probability,integer,NO
+public,risks,mitigation,text,YES
+public,risks,owner,text,YES
+public,risks,status,text,YES
+public,risks,created_at,timestamp with time zone,YES
+public,risks,updated_at,timestamp with time zone,YES
+public,step_dependencies,id,uuid,NO
+public,step_dependencies,deal_id,uuid,NO
+public,step_dependencies,step_id,uuid,NO
+public,step_dependencies,depends_on_step_id,uuid,NO
+public,step_dependencies,created_at,timestamp with time zone,YES
+public,template_steps,id,uuid,NO
+public,template_steps,template_id,uuid,NO
+public,template_steps,step_no,integer,NO
+public,template_steps,title,text,NO
+public,template_steps,description,text,YES
+public,template_steps,risk_notes,text,YES
+public,template_steps,documents_required,boolean,YES
+public,template_steps,documents_json,jsonb,YES
+public,template_steps,responsible_role,text,NO
+public,template_steps,actions_json,jsonb,YES
+public,template_steps,created_at,timestamp with time zone,YES
+realtime,messages,topic,text,NO
+realtime,messages,extension,text,NO
+realtime,messages,payload,jsonb,YES
+realtime,messages,event,text,YES
+realtime,messages,private,boolean,YES
+realtime,messages,updated_at,timestamp without time zone,NO
+realtime,messages,inserted_at,timestamp without time zone,NO
+realtime,messages,id,uuid,NO
+realtime,schema_migrations,version,bigint,NO
+realtime,schema_migrations,inserted_at,timestamp without time zone,YES
+realtime,subscription,id,bigint,NO
+realtime,subscription,subscription_id,uuid,NO
+realtime,subscription,entity,regclass,NO
+realtime,subscription,filters,ARRAY,NO
+realtime,subscription,claims,jsonb,NO
+realtime,subscription,claims_role,regrole,NO
+realtime,subscription,created_at,timestamp without time zone,NO
+storage,buckets,id,text,NO
+storage,buckets,name,text,NO
+storage,buckets,owner,uuid,YES
+storage,buckets,created_at,timestamp with time zone,YES
+storage,buckets,updated_at,timestamp with time zone,YES
+storage,buckets,public,boolean,YES
+storage,buckets,avif_autodetection,boolean,YES
+storage,buckets,file_size_limit,bigint,YES
+storage,buckets,allowed_mime_types,ARRAY,YES
+storage,buckets,owner_id,text,YES
+storage,buckets,type,USER-DEFINED,NO
+storage,buckets_analytics,name,text,NO
+storage,buckets_analytics,type,USER-DEFINED,NO
+storage,buckets_analytics,format,text,NO
+storage,buckets_analytics,created_at,timestamp with time zone,NO
+storage,buckets_analytics,updated_at,timestamp with time zone,NO
+storage,buckets_analytics,id,uuid,NO
+storage,buckets_analytics,deleted_at,timestamp with time zone,YES
+storage,buckets_vectors,id,text,NO
+storage,buckets_vectors,type,USER-DEFINED,NO
+storage,buckets_vectors,created_at,timestamp with time zone,NO
+storage,buckets_vectors,updated_at,timestamp with time zone,NO
+storage,migrations,id,integer,NO
+storage,migrations,name,character varying,NO
+storage,migrations,hash,character varying,NO
+storage,migrations,executed_at,timestamp without time zone,YES
+storage,objects,id,uuid,NO
+storage,objects,bucket_id,text,YES
+storage,objects,name,text,YES
+storage,objects,owner,uuid,YES
+storage,objects,created_at,timestamp with time zone,YES
+storage,objects,updated_at,timestamp with time zone,YES
+storage,objects,last_accessed_at,timestamp with time zone,YES
+storage,objects,metadata,jsonb,YES
+storage,objects,path_tokens,ARRAY,YES
+storage,objects,version,text,YES
+storage,objects,owner_id,text,YES
+storage,objects,user_metadata,jsonb,YES
+storage,objects,level,integer,YES
+storage,prefixes,bucket_id,text,NO
+storage,prefixes,name,text,NO
+storage,prefixes,level,integer,NO
+storage,prefixes,created_at,timestamp with time zone,YES
+storage,prefixes,updated_at,timestamp with time zone,YES
+storage,s3_multipart_uploads,id,text,NO
+storage,s3_multipart_uploads,in_progress_size,bigint,NO
+storage,s3_multipart_uploads,upload_signature,text,NO
+storage,s3_multipart_uploads,bucket_id,text,NO
+storage,s3_multipart_uploads,key,text,NO
+storage,s3_multipart_uploads,version,text,NO
+storage,s3_multipart_uploads,owner_id,text,YES
+storage,s3_multipart_uploads,created_at,timestamp with time zone,NO
+storage,s3_multipart_uploads,user_metadata,jsonb,YES
+storage,s3_multipart_uploads_parts,id,uuid,NO
+storage,s3_multipart_uploads_parts,upload_id,text,NO
+storage,s3_multipart_uploads_parts,size,bigint,NO
+storage,s3_multipart_uploads_parts,part_number,integer,NO
+storage,s3_multipart_uploads_parts,bucket_id,text,NO
+storage,s3_multipart_uploads_parts,key,text,NO
+storage,s3_multipart_uploads_parts,etag,text,NO
+storage,s3_multipart_uploads_parts,owner_id,text,YES
+storage,s3_multipart_uploads_parts,version,text,NO
+storage,s3_multipart_uploads_parts,created_at,timestamp with time zone,NO
+storage,vector_indexes,id,text,NO
+storage,vector_indexes,name,text,NO
+storage,vector_indexes,bucket_id,text,NO
+storage,vector_indexes,data_type,text,NO
+storage,vector_indexes,dimension,integer,NO
+storage,vector_indexes,distance_metric,text,NO
+storage,vector_indexes,metadata_configuration,jsonb,YES
+storage,vector_indexes,created_at,timestamp with time zone,NO
+storage,vector_indexes,updated_at,timestamp with time zone,NO
+vault,decrypted_secrets,id,uuid,YES
+vault,decrypted_secrets,name,text,YES
+vault,decrypted_secrets,description,text,YES
+vault,decrypted_secrets,secret,text,YES
+vault,decrypted_secrets,decrypted_secret,text,YES
+vault,decrypted_secrets,key_id,uuid,YES
+vault,decrypted_secrets,nonce,bytea,YES
+vault,decrypted_secrets,created_at,timestamp with time zone,YES
+vault,decrypted_secrets,updated_at,timestamp with time zone,YES
+vault,secrets,id,uuid,NO
+vault,secrets,name,text,YES
+vault,secrets,description,text,NO
+vault,secrets,secret,text,NO
+vault,secrets,key_id,uuid,YES
+vault,secrets,nonce,bytea,YES
+vault,secrets,created_at,timestamp with time zone,NO
+vault,secrets,updated_at,timestamp with time zone,NO
