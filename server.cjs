@@ -1,6 +1,7 @@
 require("dotenv").config({ quiet: true });
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const { Pool } = require("pg");
 const { updateStepAndReplanPG } = require("./processService.pg.cjs");
 
@@ -253,6 +254,44 @@ app.post("/api/deals/:dealId/steps/:stepNo/done", async (req, res) => {
  * POST /api/deals/:dealId/steps/:stepNo/gate
  * Body: { "gate_status": "go" | "stop" | "pending" | "na" | "optional" }
  */
+/**
+ * Step wieder öffnen (auditfähig)
+ * POST /api/deals/:dealId/steps/:stepNo/reopen
+ * Body: { "reason": "Pflichtbegründung" }
+ */
+app.post("/api/deals/:dealId/steps/:stepNo/reopen", async (req, res) => {
+  try {
+    const { dealId, stepNo } = req.params;
+    const stepNoInt = parseInt(stepNo, 10);
+    const { reason } = req.body;
+
+    if (!Number.isInteger(stepNoInt)) {
+      return res.status(400).json({ ok: false, error: "stepNo muss eine Zahl sein" });
+    }
+    if (!reason || String(reason).trim().length < 5) {
+      return res.status(400).json({ ok: false, error: "reason fehlt (mind. 5 Zeichen)" });
+    }
+
+    const result = await updateStepAndReplanPG({
+      dealId,
+      stepNo: stepNoInt,
+      patch: {
+        status: "Open",
+        actual_done: null,
+        verification_note: "REOPEN: " + String(reason).trim()
+      },
+      triggerReplan: true,
+      triggerBlocking: false
+    });
+
+    res.json({ ok: true, updated: result.updated, steps: result.steps });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+
+
 app.post("/api/deals/:dealId/steps/:stepNo/gate", async (req, res) => {
   try {
     const { dealId, stepNo } = req.params;
@@ -301,6 +340,12 @@ app.get("/api/deals/:dealId/steps", async (req, res) => {
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
+});
+
+
+// UI2 aus Datei (mit REOPEN)
+app.get("/ui2", (req, res) => {
+  res.sendFile(path.join(__dirname, "ui2.html"));
 });
 
 const PORT = process.env.PORT || 8787;
