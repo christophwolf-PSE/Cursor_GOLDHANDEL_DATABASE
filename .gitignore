@@ -1,1 +1,5 @@
 supabase/.temp/
+
+# local junk / backups
+_junk_*/
+*.bak*
