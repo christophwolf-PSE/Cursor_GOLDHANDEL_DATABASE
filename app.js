@@ -29,6 +29,7 @@ let lastFxRate = null;
 let currentKycProfileId = null;
 let currentKycRole = 'Buyer';
 let lastGeneratorDealId = null;
+let deleteContext = null;
 const ACCESS_REQUEST_MODE = true;
 const LBMA_FALLBACK_QUOTE = {
     usd: 2300
@@ -59,6 +60,7 @@ window.setGeneratorDealContext = async (dealId) => {
             .from('deals')
             .select('*')
             .eq('id', dealId)
+            .is('deleted_at', null)
             .single();
         if (dealError || !deal) {
             console.error('Generator deal context: failed to load deal', dealError);
@@ -505,6 +507,277 @@ function setNewDealSellerDisplay(contact) {
     sellerInput.value = [name, company].filter(Boolean).join(' · ') || name || company;
 }
 
+function openDeleteEntityModal(type, entity) {
+    const modal = document.getElementById('delete-entity-modal');
+    const titleEl = document.getElementById('delete-entity-title');
+    const textEl = document.getElementById('delete-entity-text');
+    const reasonEl = document.getElementById('delete-reason');
+    const confirmEl = document.getElementById('delete-confirm-checkbox');
+    const confirmTextEl = document.getElementById('delete-confirm-text');
+    const modeArchive = modal?.querySelector('input[name="delete-mode"][value="archive"]');
+    if (!modal || !titleEl || !textEl || !reasonEl || !confirmEl || !modeArchive) return;
+
+    const label = entity?.label || '';
+    deleteContext = {
+        type,
+        id: entity?.id || null,
+        label,
+        confirmText: `DELETE ${label}`.trim()
+    };
+
+    titleEl.textContent = type === 'deal' ? 'Geschäft löschen' : 'Kontakt löschen';
+    textEl.textContent = type === 'deal'
+        ? `Geschäft ${label} löschen: Archivieren oder endgültig entfernen?`
+        : `Kontakt ${label} löschen: Archivieren oder endgültig entfernen?`;
+    const confirmTextEl = document.getElementById('delete-confirm-text');
+    if (confirmTextEl) confirmTextEl.placeholder = deleteContext.confirmText;
+
+    modeArchive.checked = true;
+    confirmEl.checked = false;
+    confirmEl.disabled = true;
+    if (confirmTextEl) confirmTextEl.value = '';
+    reasonEl.value = '';
+    updateDeleteConfirmState();
+    openModal('delete-entity-modal');
+}
+
+function getDeleteMode() {
+    const modal = document.getElementById('delete-entity-modal');
+    const selected = modal?.querySelector('input[name="delete-mode"]:checked');
+    return selected?.value || 'archive';
+}
+
+function updateDeleteConfirmState() {
+    const modal = document.getElementById('delete-entity-modal');
+    const confirmEl = document.getElementById('delete-confirm-checkbox');
+    const confirmBtn = document.getElementById('delete-entity-confirm');
+    const warningEl = document.getElementById('delete-entity-warning');
+    const confirmTextEl = document.getElementById('delete-confirm-text');
+    if (!modal || !confirmEl || !confirmBtn) return;
+    const mode = getDeleteMode();
+    if (mode === 'purge') {
+        confirmEl.disabled = false;
+        const expected = (deleteContext?.confirmText || 'DELETE').toUpperCase();
+        const textOk = (confirmTextEl?.value || '').trim().toUpperCase() === expected;
+        confirmBtn.disabled = !(confirmEl.checked && textOk);
+        if (warningEl) warningEl.style.display = 'block';
+    } else {
+        confirmEl.checked = false;
+        confirmEl.disabled = true;
+        confirmBtn.disabled = false;
+        if (confirmTextEl) confirmTextEl.value = '';
+        if (warningEl) warningEl.style.display = 'none';
+    }
+}
+
+async function handleDeleteEntityConfirm() {
+    if (!deleteContext?.id) return;
+    const mode = getDeleteMode();
+    const reason = document.getElementById('delete-reason')?.value?.trim() || null;
+    if (mode === 'purge') {
+        const confirmed = document.getElementById('delete-confirm-checkbox')?.checked;
+        const confirmText = (document.getElementById('delete-confirm-text')?.value || '').trim().toUpperCase();
+        const expected = (deleteContext?.confirmText || 'DELETE').toUpperCase();
+        if (!confirmed || confirmText !== expected) return;
+    }
+
+    try {
+        if (deleteContext.type === 'deal') {
+            await deleteDeal(deleteContext.id, mode, reason);
+        } else if (deleteContext.type === 'contact') {
+            await deleteContact(deleteContext.id, mode, reason);
+        }
+        closeModal('delete-entity-modal');
+        alert('Löschen abgeschlossen.');
+    } catch (err) {
+        console.error('Delete failed:', err);
+        alert('Löschen fehlgeschlagen. Details in Konsole.');
+    } finally {
+        deleteContext = null;
+    }
+}
+
+async function deleteDeal(dealId, mode, reason) {
+    if (demoMode || window.demoMode || !supabase) return;
+    if (mode === 'archive') {
+        const payload = {
+            deleted_at: new Date().toISOString(),
+            deleted_by: currentUser?.id || null,
+            delete_reason: reason
+        };
+        const { error } = await supabase.from('deals').update(payload).eq('id', dealId);
+        if (error) throw error;
+        await logAudit(dealId, 'ARCHIVE', 'deal', dealId, null, payload);
+    } else {
+        await purgeDeal(dealId);
+    }
+
+    if (currentDeal?.id === dealId) {
+        activeView = 'dashboard';
+        activeDealId = null;
+        document.getElementById('deal-detail-view')?.classList.remove('active');
+        document.getElementById('dashboard-view')?.classList.add('active');
+    }
+    await loadDashboard();
+}
+
+async function purgeDeal(dealId) {
+    const { data: docs, error: docsError } = await supabase
+        .from('documents')
+        .select('file_path')
+        .eq('deal_id', dealId);
+    if (docsError) {
+        console.error('Error loading documents for purge:', docsError);
+    }
+    const paths = (docs || []).map(d => d.file_path).filter(Boolean);
+    if (paths.length > 0) {
+        const { error: storageError } = await supabase.storage.from(STORAGE_BUCKET).remove(paths);
+        if (storageError) console.error('Error deleting storage files:', storageError);
+    }
+
+    const tables = [
+        'deal_step_audit',
+        'audit_log',
+        'deal_steps',
+        'deal_contacts',
+        'deal_bank_accounts',
+        'documents',
+        'kyc_bank_contacts',
+        'kyc_bank_details',
+        'kyc_profiles',
+        'kyc_trade_references',
+        'parties',
+        'risks',
+        'step_dependencies'
+    ];
+    for (const table of tables) {
+        const { error } = await supabase.from(table).delete().eq('deal_id', dealId);
+        if (error) console.error(`Error deleting from ${table}:`, error);
+    }
+    const { error: dealError } = await supabase.from('deals').delete().eq('id', dealId);
+    if (dealError) throw dealError;
+    await logAudit(dealId, 'PURGE', 'deal', dealId, null, { deal_id: dealId });
+}
+
+function getDummyMode() {
+    const modal = document.getElementById('dummy-cleanup-modal');
+    const selected = modal?.querySelector('input[name="dummy-mode"]:checked');
+    return selected?.value || 'archive';
+}
+
+function updateDummyConfirmState() {
+    const modal = document.getElementById('dummy-cleanup-modal');
+    const confirmEl = document.getElementById('dummy-confirm-checkbox');
+    const confirmBtn = document.getElementById('dummy-confirm');
+    const warningEl = document.getElementById('dummy-cleanup-warning');
+    const confirmTextEl = document.getElementById('dummy-confirm-text');
+    if (!modal || !confirmEl || !confirmBtn) return;
+    const mode = getDummyMode();
+    if (mode === 'purge') {
+        confirmEl.disabled = false;
+        const textOk = (confirmTextEl?.value || '').trim().toUpperCase() === 'DELETE DUMMY';
+        confirmBtn.disabled = !(confirmEl.checked && textOk);
+        if (warningEl) warningEl.style.display = 'block';
+    } else {
+        confirmEl.checked = false;
+        confirmEl.disabled = true;
+        confirmBtn.disabled = false;
+        if (confirmTextEl) confirmTextEl.value = '';
+        if (warningEl) warningEl.style.display = 'none';
+    }
+}
+
+async function handleDummyCleanupConfirm() {
+    if (demoMode || window.demoMode || !supabase) return;
+    const mode = getDummyMode();
+    const reset = document.getElementById('dummy-reset-numbering')?.checked;
+    const confirmed = document.getElementById('dummy-confirm-checkbox')?.checked;
+    const confirmText = (document.getElementById('dummy-confirm-text')?.value || '').trim().toUpperCase();
+    if (mode === 'purge' && (!confirmed || confirmText !== 'DELETE DUMMY')) return;
+
+    showLoading(true);
+    try {
+        let dealIds = [];
+        if (reset) {
+            const { data: all, error } = await supabase.from('deals').select('id');
+            if (error) throw error;
+            dealIds = (all || []).map(d => d.id);
+            if (dealIds.length > 0) {
+                const { error: markErr } = await supabase
+                    .from('deals')
+                    .update({ is_test: true })
+                    .in('id', dealIds);
+                if (markErr) throw markErr;
+            }
+        } else {
+            const { data: testDeals, error } = await supabase
+                .from('deals')
+                .select('id')
+                .eq('is_test', true);
+            if (error) throw error;
+            dealIds = (testDeals || []).map(d => d.id);
+        }
+
+        if (dealIds.length === 0) {
+            alert('Keine Dummy-Daten gefunden.');
+            closeModal('dummy-cleanup-modal');
+            return;
+        }
+
+        if (mode === 'archive') {
+            const payload = {
+                deleted_at: new Date().toISOString(),
+                deleted_by: currentUser?.id || null,
+                delete_reason: 'Dummy cleanup'
+            };
+            const { error } = await supabase.from('deals').update(payload).in('id', dealIds);
+            if (error) throw error;
+        } else {
+            for (const dealId of dealIds) {
+                await purgeDeal(dealId);
+            }
+        }
+
+        closeModal('dummy-cleanup-modal');
+        alert('Dummy-Bereinigung abgeschlossen.');
+        await loadDashboard();
+    } catch (err) {
+        console.error('Dummy cleanup failed:', err);
+        alert('Bereinigung fehlgeschlagen. Details in Konsole.');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function deleteContact(contactId, mode, reason) {
+    if (demoMode || window.demoMode || !supabase) return;
+    if (mode === 'archive') {
+        const payload = {
+            deleted_at: new Date().toISOString(),
+            deleted_by: currentUser?.id || null,
+            delete_reason: reason
+        };
+        const { error } = await supabase.from('contacts').update(payload).eq('id', contactId);
+        if (error) throw error;
+    } else {
+        const tables = ['deal_contacts', 'deal_bank_accounts', 'kyc_profiles'];
+        for (const table of tables) {
+            const { error } = await supabase.from(table).delete().eq('contact_id', contactId);
+            if (error) console.error(`Error deleting from ${table}:`, error);
+        }
+        const { error: contactError } = await supabase.from('contacts').delete().eq('id', contactId);
+        if (contactError) throw contactError;
+    }
+
+    await loadContacts();
+    selectedContactId = null;
+    const detail = document.getElementById('contact-detail');
+    const empty = document.getElementById('contact-detail-empty');
+    if (empty) empty.style.display = 'block';
+    if (detail) detail.style.display = 'none';
+    renderContactsList(filterContacts(document.getElementById('contacts-search')?.value || ''));
+}
+
 
 // ============================================
 // Event Listeners
@@ -586,6 +859,70 @@ function setupEventListeners() {
     const discountBtn = document.getElementById('discount-participation-btn');
     if (discountBtn) {
         discountBtn.addEventListener('click', () => openDiscountParticipationModal());
+    }
+    const deleteDealBtn = document.getElementById('delete-deal-btn');
+    if (deleteDealBtn) {
+        deleteDealBtn.addEventListener('click', () => {
+            if (!currentDeal?.id) return;
+            openDeleteEntityModal('deal', { id: currentDeal.id, label: currentDeal.deal_no });
+        });
+    }
+
+    const deleteModal = document.getElementById('delete-entity-modal');
+    if (deleteModal) {
+        deleteModal.querySelectorAll('input[name="delete-mode"]').forEach(input => {
+            input.addEventListener('change', updateDeleteConfirmState);
+        });
+    }
+    const deleteConfirm = document.getElementById('delete-confirm-checkbox');
+    if (deleteConfirm) {
+        deleteConfirm.addEventListener('change', updateDeleteConfirmState);
+    }
+    const deleteConfirmText = document.getElementById('delete-confirm-text');
+    if (deleteConfirmText) {
+        deleteConfirmText.addEventListener('input', updateDeleteConfirmState);
+    }
+    const deleteCancelBtn = document.getElementById('delete-entity-cancel');
+    if (deleteCancelBtn) {
+        deleteCancelBtn.addEventListener('click', () => closeModal('delete-entity-modal'));
+    }
+    const deleteConfirmBtn = document.getElementById('delete-entity-confirm');
+    if (deleteConfirmBtn) {
+        deleteConfirmBtn.addEventListener('click', handleDeleteEntityConfirm);
+    }
+
+    const cleanupBtn = document.getElementById('cleanup-dummy-btn');
+    if (cleanupBtn) {
+        cleanupBtn.addEventListener('click', () => {
+            const confirmEl = document.getElementById('dummy-confirm-checkbox');
+            const confirmTextEl = document.getElementById('dummy-confirm-text');
+            if (confirmEl) confirmEl.checked = false;
+            if (confirmTextEl) confirmTextEl.value = '';
+            updateDummyConfirmState();
+            openModal('dummy-cleanup-modal');
+        });
+    }
+    const dummyModal = document.getElementById('dummy-cleanup-modal');
+    if (dummyModal) {
+        dummyModal.querySelectorAll('input[name="dummy-mode"]').forEach(input => {
+            input.addEventListener('change', updateDummyConfirmState);
+        });
+    }
+    const dummyConfirm = document.getElementById('dummy-confirm-checkbox');
+    if (dummyConfirm) {
+        dummyConfirm.addEventListener('change', updateDummyConfirmState);
+    }
+    const dummyConfirmText = document.getElementById('dummy-confirm-text');
+    if (dummyConfirmText) {
+        dummyConfirmText.addEventListener('input', updateDummyConfirmState);
+    }
+    const dummyCancel = document.getElementById('dummy-cancel');
+    if (dummyCancel) {
+        dummyCancel.addEventListener('click', () => closeModal('dummy-cleanup-modal'));
+    }
+    const dummyConfirmBtn = document.getElementById('dummy-confirm');
+    if (dummyConfirmBtn) {
+        dummyConfirmBtn.addEventListener('click', handleDummyCleanupConfirm);
     }
 
     const kycSaveBtn = document.getElementById('kyc-save-btn');
@@ -1362,6 +1699,7 @@ async function loadDashboard() {
         const { data, error } = await supabase
             .from('deals')
             .select('*')
+            .is('deleted_at', null)
             .order('created_at', { ascending: false });
         
         showLoading(false);
@@ -2484,6 +2822,7 @@ async function loadDealDetail(dealId) {
             .from('deals')
             .select('*')
             .eq('id', dealId)
+            .is('deleted_at', null)
             .single();
         
         if (dealError) {
@@ -3307,6 +3646,8 @@ async function handleCreateDeal(e) {
     const { data: lastDeal } = await supabase
         .from('deals')
         .select('deal_no')
+        .is('deleted_at', null)
+        .neq('is_test', true)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -3333,6 +3674,7 @@ async function handleCreateDeal(e) {
             offer_terms: offerTerms || null,
             lbma_discount_pct: discountValue,
             discount_participation: participation,
+            is_test: false,
             created_by: user?.id
         })
         .select()
@@ -3352,7 +3694,7 @@ async function handleCreateDeal(e) {
     const { data: template } = await supabase
         .from('process_templates')
         .select('id')
-        .eq('name', 'Goldankauf Standard-Prozess')
+        .eq('name', 'Goldankauf Prozess V2 (18 Phasen / 35+1 konditional, Gates, Arbeitstage)')
         .single();
     
     if (template) {
@@ -3366,17 +3708,15 @@ async function handleCreateDeal(e) {
             // Filter steps based on commodity type and hallmark age
             let stepsToCreate = templateSteps;
             
-            // If Hallmark <=5 Jahre, skip Re-Identifizierung step (step 6)
-            if (commodityType === 'Hallmark' && hallmarkAge === '<=5 Jahre') {
-                stepsToCreate = templateSteps.filter(s => s.step_no !== 6);
-            }
-            // If Doré, skip Re-Identifizierung step
-            else if (commodityType === 'Doré') {
-                stepsToCreate = templateSteps.filter(s => s.step_no !== 6);
-            }
+            // If NOT Doré, mark Re-Identifizierung step (13 in V2) as done without removing it
+            const isDore = commodityType === 'Doré';
             
             // Create deal steps
-            const dealSteps = stepsToCreate.map((templateStep, index) => ({
+            const dealSteps = stepsToCreate.map((templateStep, index) => {
+                const isStep13 = templateStep.step_no === 13;
+                const autoDone = !isDore && isStep13;
+                const today = new Date().toISOString().slice(0, 10);
+                return {
                 deal_id: deal.id,
                 step_no: index + 1, // Renumber to be sequential
                 title: templateStep.title,
@@ -3385,8 +3725,15 @@ async function handleCreateDeal(e) {
                 documents_required: templateStep.documents_required,
                 documents_json: templateStep.documents_json,
                 responsible_role: templateStep.responsible_role,
-                status: 'Open'
-            }));
+                gate_level: templateStep.gate_level,
+                gate_code: templateStep.gate_code,
+                duration_wd: templateStep.duration_wd,
+                lag_wd: templateStep.lag_wd,
+                buffer_wd: templateStep.buffer_wd,
+                status: autoDone ? 'Done' : 'Open',
+                actual_done: autoDone ? today : null
+            };
+            });
             
             await supabase.from('deal_steps').insert(dealSteps);
         }
@@ -3628,6 +3975,7 @@ function setupContactsModal() {
     const searchInput = document.getElementById('contacts-search');
     const newBtn = document.getElementById('new-contact-btn');
     const saveBtn = document.getElementById('save-contact-btn');
+    const deleteBtn = document.getElementById('delete-contact-btn');
     const addDealBtn = document.getElementById('add-contact-deal-btn');
     const assignSellerBtn = document.getElementById('assign-seller-btn');
     const addBankBtn = document.getElementById('add-bank-info-btn');
@@ -3649,6 +3997,14 @@ function setupContactsModal() {
     });
     
     saveBtn.addEventListener('click', saveContact);
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            if (!selectedContactId) return;
+            const contact = allContacts.find(item => item.id === selectedContactId);
+            const label = contact?.full_name || contact?.company || 'Kontakt';
+            openDeleteEntityModal('contact', { id: selectedContactId, label });
+        });
+    }
     
     if (addDealBtn) {
         addDealBtn.addEventListener('click', addContactDeal);
@@ -3923,6 +4279,7 @@ async function ensureDealsLoaded() {
     const { data, error } = await supabase
         .from('deals')
         .select('id, deal_no')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
     if (!error) {
         allDeals = data || [];
@@ -3965,6 +4322,7 @@ async function loadContacts() {
     const { data, error } = await supabase
         .from('contacts')
         .select('*')
+        .is('deleted_at', null)
         .order('full_name', { ascending: true });
     if (error) {
         console.error('Error loading contacts:', error);
@@ -4330,7 +4688,7 @@ async function loadDealContacts(dealId) {
     
     const { data: dealContacts, error: dealContactsError } = await supabase
         .from('deal_contacts')
-        .select('id, role, notes, contact:contacts(id, full_name, role, company, email, phone, mobile)')
+        .select('id, role, notes, contact:contacts(id, full_name, role, company, email, phone, mobile, deleted_at)')
         .eq('deal_id', dealId)
         .order('created_at', { ascending: false });
     
@@ -4343,8 +4701,9 @@ async function loadDealContacts(dealId) {
             sellerValue.textContent = '-';
         }
     } else {
-        renderDealContacts(dealContacts || []);
-        const sellerLink = (dealContacts || []).find(link => link.role === 'Seller');
+        const visibleContacts = (dealContacts || []).filter(link => !link.contact?.deleted_at);
+        renderDealContacts(visibleContacts);
+        const sellerLink = visibleContacts.find(link => link.role === 'Seller');
         setEditSellerDisplay(sellerLink?.contact || null);
         const sellerValue = document.getElementById('deal-seller-value');
         if (sellerValue) {
