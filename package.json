@@ -7,6 +7,8 @@
     "doc": "docs"
   },
   "scripts": {
+    "start": "node server.cjs",
+    "dev": "node server.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
